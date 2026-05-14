@@ -27,6 +27,10 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     "joint/set_joints",
     10,
     [this](booster_joint_interface::msg::SetJoints::SharedPtr msg) {
+      RCLCPP_INFO(
+        this->node->get_logger(),
+        "Received joint/set_joints publish request with %zu joints",
+        msg->joints.size());
       auto targets = joint_msg_to_target(*msg);
       joint_manager.handle_set_joints(targets);
     });
@@ -35,6 +39,11 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     "joint/set_torques",
     10,
     [this](booster_joint_interface::msg::SetTorques::SharedPtr msg) {
+      RCLCPP_INFO(
+        this->node->get_logger(),
+        "Received joint/set_torques publish request with %zu joints, torque %s",
+        msg->ids.size(),
+        msg->torque_enable ? "enable" : "disable");
       auto joints = id_to_joint_index(msg->ids);
       joint_manager.handle_set_torques(joints, msg->torque_enable);
     }
@@ -104,6 +113,7 @@ void JointManagerNode::print_all_joint_info()
 
 void JointManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd & cmd)
 {
+  RCLCPP_DEBUG(node->get_logger(), "Publishing /joint_ctrl command");
   joint_cmd_publisher->publish(cmd);
 }
 
@@ -119,24 +129,48 @@ void JointManagerNode::publish_joint_state()
   }
 
   joint_state_publisher->publish(state);
+  RCLCPP_DEBUG(
+    node->get_logger(),
+    "Published joint/joint_states with %zu motor states",
+    state.motor_state_serial.size());
 }
 
 void JointManagerNode::handle_prepare_transition_request(const std::shared_ptr<JointPrepareService::Request> req,
     std::shared_ptr<JointPrepareService::Response> res)
 {
   const auto & command = req->command;
+  RCLCPP_INFO(
+    node->get_logger(),
+    "Received prep_transition_service request: transition=%u",
+    static_cast<unsigned int>(command.transition));
   switch (command.transition) {
     case booster_joint_interface::msg::TransitionCommand::TRANSITION_MODE_SWITCH:
       handle_mode_prepare(command.target_mode, res);
+      RCLCPP_INFO(
+        node->get_logger(),
+        "Handled mode transition prepare request: target_mode=%u, success=%s, message='%s'",
+        static_cast<unsigned int>(command.target_mode),
+        res->success ? "true" : "false",
+        res->message.c_str());
       return;
 
     case booster_joint_interface::msg::TransitionCommand::TRANSITION_UPPER_BODY_CONTROL:
       handle_upper_body_prepare(command.upper_body_enable, res);
+      RCLCPP_INFO(
+        node->get_logger(),
+        "Handled upper body transition prepare request: enable=%s, success=%s, message='%s'",
+        command.upper_body_enable ? "true" : "false",
+        res->success ? "true" : "false",
+        res->message.c_str());
       return;
 
     default:
       res->success = false;
       res->message = "Unknown transition type";
+      RCLCPP_WARN(
+        node->get_logger(),
+        "Rejected prep_transition_service request: unknown transition=%u",
+        static_cast<unsigned int>(command.transition));
       return;
   }
 }
