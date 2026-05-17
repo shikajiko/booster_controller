@@ -31,16 +31,14 @@ struct JointCommandTarget
   JointIndex joint;
   float position;
   float velocity;
-  float weight{kActiveJointWeight};
+  float weight;
 };
 
 booster_interface::msg::LowCmd construct_joint_command(
-  const booster_interface::msg::LowState & state,
   const std::vector<JointCommandTarget> & targets);
 
 booster_interface::msg::LowCmd construct_set_torque_command(
-  const booster_interface::msg::LowState & state,
-  const std::vector<JointIndex> & joints,
+  const std::vector<JointCommandTarget> & targets,
   bool enable_torque);
 
 }  // namespace booster_joint_manager

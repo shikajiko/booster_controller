@@ -30,9 +30,9 @@ ament_target_dependencies(${PROJECT_NAME}_lib
   booster_joint_interface
 )
 
-add_executable(joint_state_manager src/main.cpp)
-target_link_libraries(joint_state_manager ${PROJECT_NAME}_lib)
-ament_target_dependencies(joint_state_manager rclcpp booster_interface booster_joint_interface)
+add_executable(main src/main.cpp)
+target_link_libraries(main ${PROJECT_NAME}_lib)
+ament_target_dependencies(main rclcpp booster_interface booster_joint_interface)
 
 add_executable(read_joints src/read_joints.cpp)
 target_link_libraries(read_joints ${PROJECT_NAME}_lib)
@@ -44,7 +44,7 @@ install(
 )
 
 install(
-  TARGETS ${PROJECT_NAME}_lib joint_state_manager read_joints
+  TARGETS ${PROJECT_NAME}_lib main read_joints
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

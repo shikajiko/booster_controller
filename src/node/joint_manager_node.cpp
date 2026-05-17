@@ -111,6 +111,7 @@ void JointManagerNode::handle_prepare_transition_request(const std::shared_ptr<J
     node->get_logger(),
     "Received prep_transition_service request: transition=%u",
     static_cast<unsigned int>(command.transition));
+    
   switch (command.transition) {
     case booster_joint_interface::msg::TransitionCommand::TRANSITION_MODE_SWITCH:
       handle_mode_prepare(command.target_mode, res);
@@ -154,13 +155,13 @@ void JointManagerNode::handle_mode_prepare(uint8_t target_mode, std::shared_ptr<
     case NextMode::MODE_WALK:
       joint_manager.set_init_position(false);
       res->success = true;
-      res->message = "Prepared init pose";
+      res->message = "Preparing init pose";
       return;
 
     case NextMode::MODE_CUSTOM:
       joint_manager.maintain_current_pose();
       res->success = true;
-      res->message = "Prepared current-pose hold";
+      res->message = "Preparing current-pose hold";
       return;
 
     default:

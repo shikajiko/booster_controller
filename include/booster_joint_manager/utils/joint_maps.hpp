@@ -15,7 +15,6 @@ using JointIndex = b1::JointIndexK1;
 
 inline constexpr std::size_t kJointCnt = b1::kJointCntK1;
 
-// K1 has no waist joint in the SERIAL layout; leg indices start at 10.
 inline constexpr std::array<JointIndex, kJointCnt> kAllJoints = {
   JointIndex::kHeadYaw,
   JointIndex::kHeadPitch,

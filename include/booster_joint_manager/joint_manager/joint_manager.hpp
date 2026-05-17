@@ -26,7 +26,6 @@ public:
   void maintain_current_pose();
 
 private:
-  mutable std::mutex mutex;
   booster_interface::msg::LowState current_low_state;
   bool low_state_received{false};
   booster_interface::msg::LowCmd torque_command;
