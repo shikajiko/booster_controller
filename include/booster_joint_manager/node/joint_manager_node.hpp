@@ -43,6 +43,7 @@ private:
   void publish_joint_state();
   void publish_joint_cmd(const booster_interface::msg::LowCmd & cmd);
   void prepare_mode_switch();
+  void print_target_command(const std::vector<JointCommandTarget> & targets);
   void update_low_state(const booster_interface::msg::LowState::SharedPtr & msg);
   void handle_prepare_transition_request(const std::shared_ptr<JointPrepareService::Request> req, std::shared_ptr<JointPrepareService::Response> res);
   void handle_mode_prepare(uint8_t target_mode, std::shared_ptr<JointPrepareService::Response> res);

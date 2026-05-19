@@ -213,6 +213,11 @@ bool JointManager::get_low_state(booster_interface::msg::LowState & low_state) c
   return true;
 }
 
+const std::vector<JointCommandTarget> & JointManager::get_target_command() const
+{
+  return target_command;
+}
+
 bool JointManager::has_low_state() const
 {
   return low_state_received;

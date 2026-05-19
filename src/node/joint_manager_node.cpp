@@ -79,6 +79,52 @@ bool JointManagerNode::get_joint_state(
   return joint_manager.get_joint_state(joint, state);
 }
 
+void JointManagerNode::print_joint_info(JointIndex joint)
+{
+  booster_interface::msg::MotorState state;
+  if (!get_joint_state(joint, state)) {
+    RCLCPP_WARN(
+      node->get_logger(),
+      "joint %02d (%.*s): q unavailable",
+      static_cast<int>(joint),
+      static_cast<int>(joint_name(joint).size()),
+      joint_name(joint).data());
+    return;
+  }
+
+  RCLCPP_INFO(
+    node->get_logger(),
+    "joint %02d (%.*s): q=% .4f",
+    static_cast<int>(joint),
+    static_cast<int>(joint_name(joint).size()),
+    joint_name(joint).data(),
+    state.q);
+}
+
+void JointManagerNode::print_all_joint_info()
+{
+  RCLCPP_INFO(node->get_logger(), "Current joint q values:");
+  for (const auto joint : kAllJoints) {
+    print_joint_info(joint);
+  }
+}
+
+void JointManagerNode::print_target_command(const std::vector<JointCommandTarget> & targets)
+{
+  RCLCPP_INFO(node->get_logger(), "Current target_command positions:");
+  for (const auto & target : targets) {
+    RCLCPP_INFO(
+      node->get_logger(),
+      "target joint %02d (%.*s): q=% .4f velocity=% .4f weight=% .4f",
+      static_cast<int>(target.joint),
+      static_cast<int>(joint_name(target.joint).size()),
+      joint_name(target.joint).data(),
+      target.position,
+      target.velocity,
+      target.weight);
+  }
+}
+
 void JointManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd & cmd)
 {
   RCLCPP_DEBUG(node->get_logger(), "Publishing /joint_ctrl command");
@@ -153,13 +199,17 @@ void JointManagerNode::handle_mode_prepare(uint8_t target_mode, std::shared_ptr<
 
     case NextMode::MODE_STAND:
     case NextMode::MODE_WALK:
+      prepare_mode_switch();
       joint_manager.set_init_position(false);
+      print_target_command(joint_manager.get_target_command());
       res->success = true;
       res->message = "Preparing init pose";
       return;
 
     case NextMode::MODE_CUSTOM:
+      prepare_mode_switch();
       joint_manager.maintain_current_pose();
+      print_target_command(joint_manager.get_target_command());
       res->success = true;
       res->message = "Preparing current-pose hold";
       return;
@@ -169,6 +219,11 @@ void JointManagerNode::handle_mode_prepare(uint8_t target_mode, std::shared_ptr<
       res->message = "Unknown target mode";
       return;
   }
+}
+
+void JointManagerNode::prepare_mode_switch()
+{
+  print_all_joint_info();
 }
 
 void JointManagerNode::handle_upper_body_prepare(bool enable, std::shared_ptr<JointPrepareService::Response> res)

@@ -12,7 +12,6 @@ booster_interface::msg::LowCmd construct_joint_command(
     booster_interface::msg::MotorCmd motor_cmd;
     cmd.motor_cmd.push_back(motor_cmd);
   }
-
   for (const auto & target : targets) {
     const auto index = joint_to_index(target.joint);
     if (index >= kJointCnt) {

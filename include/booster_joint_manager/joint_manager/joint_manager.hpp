@@ -21,6 +21,7 @@ public:
   bool tick_command(booster_interface::msg::LowCmd & cmd);
   bool get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const;
   bool get_low_state(booster_interface::msg::LowState & state) const;
+  const std::vector<JointCommandTarget> & get_target_command() const;
   bool has_low_state() const;
   void set_init_position(bool arm_only);
   void maintain_current_pose();
