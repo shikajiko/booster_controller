@@ -19,12 +19,12 @@ public:
       10,
       [this](booster_interface::msg::LowState::SharedPtr msg) {
         if (this->print_all) {
-          print_all_joint_info(msg->motor_state_serial);
+          print_all_joint_info(msg->motor_state_parallel);
         } else {
           for (auto joint : this->joints) {
             const auto index = joint_to_index(joint);
-            if (index < msg->motor_state_serial.size()) {
-              print_joint_info(joint, msg->motor_state_serial[index]);
+            if (index < msg->motor_state_parallel.size()) {
+              print_joint_info(joint, msg->motor_state_parallel[index]);
             }
           }
         }

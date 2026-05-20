@@ -12,16 +12,11 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     "/low_state",
     10,
     [this](booster_interface::msg::LowState::SharedPtr msg) {
-      update_low_state(msg);
-      publish_joint_state();
+      update_joint_state(msg->motor_state_parallel);
     });
   
   joint_cmd_publisher =
     node->create_publisher<booster_interface::msg::LowCmd>("/joint_ctrl", 10);
-
-  //connection to other nodes via custom topic
-  joint_state_publisher =
-    node->create_publisher<booster_interface::msg::LowState>("joint/joint_states", 10);
 
   set_cmd_subscriber = node->create_subscription<booster_joint_interface::msg::SetJoints>(
     "joint/set_joints",
@@ -67,9 +62,9 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     });
 }
 
-void JointManagerNode::update_low_state(const booster_interface::msg::LowState::SharedPtr & msg)
+void JointManagerNode::update_joint_state(const std::vector<booster_interface::msg::MotorState> & msg)
 {
-  joint_manager.update_low_state(*msg);
+  joint_manager.update_joint_state(msg);
 }
 
 bool JointManagerNode::get_joint_state(
@@ -129,24 +124,6 @@ void JointManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd & 
 {
   RCLCPP_DEBUG(node->get_logger(), "Publishing /joint_ctrl command");
   joint_cmd_publisher->publish(cmd);
-}
-
-void JointManagerNode::publish_joint_state()
-{
-  booster_interface::msg::LowState state;
-  if (!joint_manager.get_low_state(state)) {
-    RCLCPP_ERROR(
-      node->get_logger(),
-      "No joint data received from the motor"
-    );
-    return;
-  }
-
-  joint_state_publisher->publish(state);
-  RCLCPP_DEBUG(
-    node->get_logger(),
-    "Published joint/joint_states with %zu motor states",
-    state.motor_state_serial.size());
 }
 
 void JointManagerNode::handle_prepare_transition_request(const std::shared_ptr<JointPrepareService::Request> req,

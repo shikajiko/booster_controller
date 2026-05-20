@@ -4,24 +4,28 @@ namespace booster_joint_manager
 {
 
 booster_interface::msg::LowCmd construct_joint_command(
+  const std::vector<MotorState> & current_joint_state,
   const std::vector<JointCommandTarget> & targets)
 {
   booster_interface::msg::LowCmd cmd;
 
   for (size_t i = 0; i< kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
-    cmd.motor_cmd.push_back(motor_cmd);
+    motor_cmd[i].q        = current_joint_state[i].q;
+    motor_cmd[i].dq       = kDefaultJointDq;
+    motor_cmd[i].kp       = kDefaultJointKps[i];
+    motor_cmd[i].kd       = kDefaultJointKds[i];
+    motor_cmd[i].tau      = kDefaultJointTau;
+    motor_cmd[i].weight   = kDefaultJointWeight;
+    motor_cmd.push_back(motor_cmd);
   }
+
   for (const auto & target : targets) {
     const auto index = joint_to_index(target.joint);
     if (index >= kJointCnt) {
       continue;
     }
     cmd.motor_cmd.at(index).q       = target.position;
-    cmd.motor_cmd.at(index).dq      = kDefaultJointDq;
-    cmd.motor_cmd.at(index).kp      = kDefaultJointKps[index];
-    cmd.motor_cmd.at(index).kd      = kDefaultJointKds[index];
-    cmd.motor_cmd.at(index).tau     = kDefaultJointTau;
     cmd.motor_cmd.at(index).weight  = target.weight;
   }
 
@@ -29,6 +33,7 @@ booster_interface::msg::LowCmd construct_joint_command(
 }
 
 booster_interface::msg::LowCmd construct_set_torque_command(
+  const std::vector<MotorState> & current_joint_state,
   const std::vector<JointCommandTarget> & targets,
   bool enable_torque)
 {
@@ -36,9 +41,14 @@ booster_interface::msg::LowCmd construct_set_torque_command(
 
   for (size_t i = 0; i< kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
+    motor_cmd[i].q        = current_joint_state[i].q;
+    motor_cmd[i].dq       = kDefaultJointDq;
+    motor_cmd[i].kp       = kDefaultJointKps[i];
+    motor_cmd[i].kd       = kDefaultJointKds[i];
+    motor_cmd[i].tau      = kDefaultJointTau;
+    motor_cmd[i].weight   = kDefaultJointWeight;
     cmd.motor_cmd.push_back(motor_cmd);
   }
-
   for (const auto target : targets) {
     const auto index = joint_to_index(target.joint);
     if (index > kJointCnt) continue;
