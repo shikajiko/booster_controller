@@ -8,16 +8,17 @@ booster_interface::msg::LowCmd construct_joint_command(
   const std::vector<JointCommandTarget> & targets)
 {
   booster_interface::msg::LowCmd cmd;
+  cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_PARALLEL;
 
   for (size_t i = 0; i< kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
-    motor_cmd[i].q        = current_joint_state[i].q;
-    motor_cmd[i].dq       = kDefaultJointDq;
-    motor_cmd[i].kp       = kDefaultJointKps[i];
-    motor_cmd[i].kd       = kDefaultJointKds[i];
-    motor_cmd[i].tau      = kDefaultJointTau;
-    motor_cmd[i].weight   = kDefaultJointWeight;
-    motor_cmd.push_back(motor_cmd);
+    motor_cmd.q = current_joint_state[i].q;
+    motor_cmd.dq = kDefaultJointDq;
+    motor_cmd.kp = kDefaultJointKps[i];
+    motor_cmd.kd = kDefaultJointKds[i];
+    motor_cmd.tau = kDefaultJointTau;
+    motor_cmd.weight = kDefaultJointWeight;
+    cmd.motor_cmd.push_back(motor_cmd);
   }
 
   for (const auto & target : targets) {
@@ -38,20 +39,21 @@ booster_interface::msg::LowCmd construct_set_torque_command(
   bool enable_torque)
 {
   booster_interface::msg::LowCmd cmd;
+  cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_PARALLEL;
 
   for (size_t i = 0; i< kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
-    motor_cmd[i].q        = current_joint_state[i].q;
-    motor_cmd[i].dq       = kDefaultJointDq;
-    motor_cmd[i].kp       = kDefaultJointKps[i];
-    motor_cmd[i].kd       = kDefaultJointKds[i];
-    motor_cmd[i].tau      = kDefaultJointTau;
-    motor_cmd[i].weight   = kDefaultJointWeight;
+    motor_cmd.q = current_joint_state[i].q;
+    motor_cmd.dq = kDefaultJointDq;
+    motor_cmd.kp = kDefaultJointKps[i];
+    motor_cmd.kd = kDefaultJointKds[i];
+    motor_cmd.tau = kDefaultJointTau;
+    motor_cmd.weight = kDefaultJointWeight;
     cmd.motor_cmd.push_back(motor_cmd);
   }
   for (const auto target : targets) {
     const auto index = joint_to_index(target.joint);
-    if (index > kJointCnt) continue;
+    if (index >= kJointCnt) continue;
     
     cmd.motor_cmd.at(index).q       = target.position;
     cmd.motor_cmd.at(index).dq      = kDefaultJointDq;

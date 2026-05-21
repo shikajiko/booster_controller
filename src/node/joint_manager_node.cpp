@@ -1,6 +1,7 @@
 #include "booster_joint_manager/node/joint_manager_node.hpp"
 
 #include <chrono>
+#include <memory>
 
 namespace booster_joint_manager
 {
@@ -44,13 +45,7 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     }
   );
 
-  joint_prepare_service = node->create_service<JointPrepareService>(
-    "prep_transition_service",
-    std::bind(
-      &JointManagerNode::handle_prepare_transition_request,
-      this,
-      std::placeholders::_1,
-      std::placeholders::_2));
+  joint_transition_handler = std::make_unique<JointTransitionHandler>(node, joint_manager);
 
   command_timer = node->create_wall_timer(
     std::chrono::milliseconds(kCommandFrequencyMs),
@@ -126,97 +121,6 @@ void JointManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd & 
   joint_cmd_publisher->publish(cmd);
 }
 
-void JointManagerNode::handle_prepare_transition_request(const std::shared_ptr<JointPrepareService::Request> req,
-    std::shared_ptr<JointPrepareService::Response> res)
-{
-  const auto & command = req->command;
-  RCLCPP_INFO(
-    node->get_logger(),
-    "Received prep_transition_service request: transition=%u",
-    static_cast<unsigned int>(command.transition));
-    
-  switch (command.transition) {
-    case booster_joint_interface::msg::TransitionCommand::TRANSITION_MODE_SWITCH:
-      handle_mode_prepare(command.target_mode, res);
-      RCLCPP_INFO(
-        node->get_logger(),
-        "Handled mode transition prepare request: target_mode=%u, success=%s, message='%s'",
-        static_cast<unsigned int>(command.target_mode),
-        res->success ? "true" : "false",
-        res->message.c_str());
-      return;
-
-    case booster_joint_interface::msg::TransitionCommand::TRANSITION_UPPER_BODY_CONTROL:
-      handle_upper_body_prepare(command.upper_body_enable, res);
-      RCLCPP_INFO(
-        node->get_logger(),
-        "Handled upper body transition prepare request: enable=%s, success=%s, message='%s'",
-        command.upper_body_enable ? "true" : "false",
-        res->success ? "true" : "false",
-        res->message.c_str());
-      return;
-
-    default:
-      res->success = false;
-      res->message = "Unknown transition type";
-      RCLCPP_WARN(
-        node->get_logger(),
-        "Rejected prep_transition_service request: unknown transition=%u",
-        static_cast<unsigned int>(command.transition));
-      return;
-  }
-}
-
-void JointManagerNode::handle_mode_prepare(uint8_t target_mode, std::shared_ptr<JointPrepareService::Response> res)
-{
-  switch (target_mode) {
-    case NextMode::MODE_DAMPING:
-      res->success = true;
-      return;
-
-    case NextMode::MODE_STAND:
-    case NextMode::MODE_WALK:
-      prepare_mode_switch();
-      joint_manager.set_init_position(false);
-      print_target_command(joint_manager.get_target_command());
-      res->success = true;
-      res->message = "Preparing init pose";
-      return;
-
-    case NextMode::MODE_CUSTOM:
-      prepare_mode_switch();
-      joint_manager.maintain_current_pose();
-      print_target_command(joint_manager.get_target_command());
-      res->success = true;
-      res->message = "Preparing current-pose hold";
-      return;
-
-    default:
-      res->success = false;
-      res->message = "Unknown target mode";
-      return;
-  }
-}
-
-void JointManagerNode::prepare_mode_switch()
-{
-  print_all_joint_info();
-}
-
-void JointManagerNode::handle_upper_body_prepare(bool enable, std::shared_ptr<JointPrepareService::Response> res)
-{
-  if (enable) {
-    joint_manager.maintain_current_pose();
-    res->success = true;
-    res->message = "Prepared upper-body current-pose hold";
-    return;
-  }
-
-  joint_manager.set_init_position(true);
-  res->success = true;
-  res->message = "Prepared upper-body init pose";
-}
-
 std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   const booster_joint_interface::msg::SetJoints & msg)
 {
@@ -233,6 +137,7 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
         static_cast<JointIndex>(joint.id),
         joint.position,
         joint.velocity,
+        0.5,
       });
   }
 

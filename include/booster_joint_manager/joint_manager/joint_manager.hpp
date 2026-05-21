@@ -21,10 +21,9 @@ public:
   bool interpolate_command(booster_interface::msg::LowCmd & cmd);
 
   bool get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const;
-  bool get_low_state(booster_interface::msg::LowState & state) const;
   const std::vector<JointCommandTarget> & get_target_command() const;
   bool has_joint_state() const;
-  void set_init_position();
+  bool set_init_position(float target_weight, bool ignore_weight);
 
 private:
   std::vector<MotorState> current_joint_states;
@@ -34,7 +33,6 @@ private:
   std::vector<JointCommandTarget> active_command;
   bool should_publish_set_torque{false};
   bool command_running{false};
-  bool verify_command_reached()
 };
 
 }  // namespace booster_joint_manager

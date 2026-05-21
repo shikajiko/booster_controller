@@ -9,7 +9,7 @@ namespace booster_joint_manager
 void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & targets)
 {
 
-  if (!has_low_state()) return;
+  if (!has_joint_state()) return;
 
   if (command_running || should_publish_set_torque) {
     return;
@@ -18,17 +18,17 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   target_command.clear();
   active_command.clear();
 
-  const auto current_q = current_joint_states[index].q;
   for (const auto & target : targets) {
     const auto index = joint_to_index(target.joint);
     if (index >= kJointCnt) {
       continue;
     }
+    const auto current_q = current_joint_states[index].q;
     target_command.push_back(target);
     active_command.push_back(
       JointCommandTarget{
         target.joint,
-        current_q;
+        current_q,
         target.velocity,
         0.5,
       });
@@ -39,15 +39,18 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
 
 void JointManager::handle_set_torques(const std::vector<JointIndex> & joints, bool torque_enable)
 {
-  if (joints.empty() || !has_low_state() || command_running || should_publish_set_torque) {
+  if (joints.empty() || !has_joint_state() || command_running || should_publish_set_torque) {
     return;
   }
 
   std::vector<JointCommandTarget> target;
-  const auto current_q = current_joint_states[index].q;
 
   for (auto joint : joints) {
-    int index = joint_to_index(joint);
+    const auto index = joint_to_index(joint);
+    if (index >= kJointCnt) {
+      continue;
+    }
+    const auto current_q = current_joint_states[index].q;
     target.push_back(
       JointCommandTarget{
         joint,
@@ -62,10 +65,10 @@ void JointManager::handle_set_torques(const std::vector<JointIndex> & joints, bo
   should_publish_set_torque = true; 
 }
 
-void JointManager::set_init_position()
+bool JointManager::set_init_position(float target_weight, bool ignore_weight)
 {
-  if (command_running || should_publish_set_torque) {
-    return;
+  if (!has_joint_state() || command_running || should_publish_set_torque) {
+    return false;
   }
 
   target_command.clear();
@@ -75,13 +78,15 @@ void JointManager::set_init_position()
     const auto index = joint_to_index(joint);
     const auto current_q = current_joint_states[index].q;
     const auto target_q = kStandPose[index];
+    float initial_weight = target_weight == 0.5? 0.0 : 0.5;
+    if (ignore_weight) initial_weight = target_weight;
 
     target_command.push_back(
       JointCommandTarget{
         joint,
         target_q,
         1.,
-        0.5,
+        target_weight
       });
 
     active_command.push_back(
@@ -89,11 +94,12 @@ void JointManager::set_init_position()
         joint,
         current_q,
         1.,
-        0,
+        initial_weight,
       });
   }
 
   command_running = !active_command.empty();
+  return true;
 }
 
 bool JointManager::interpolate_command(booster_interface::msg::LowCmd & cmd)
@@ -109,14 +115,15 @@ bool JointManager::interpolate_command(booster_interface::msg::LowCmd & cmd)
   }
 
   bool command_reached = true;
+  float weight_margin = active_command[0].weight - target_command[0].weight > 0? -kWeightMargin : kWeightMargin;
 
-  // if weight is < 0.5, slowly increment weight before moving joint
-  if (active_command[0].weight < 0.5) {
+  // if current weight doesn't equal target weight, slowly move it toward desired weight
+  if (std::abs(active_command[0].weight - target_command[0].weight) > 0.01) {
     for (std::size_t i = 0; i < active_command.size(); i++) { 
-      active_command[i].weight += kWeightMargin;
+      active_command[i].weight += weight_margin;
       active_command[i].weight = std::clamp(active_command[i].weight, 0.f, 0.5f);
 
-      if (active_command[i].weight < 0.5) {
+      if (std::abs(active_command[i].weight - target_command[i].weight) > 0.01F) {
         command_reached = false;
       }
     }
@@ -139,7 +146,6 @@ bool JointManager::interpolate_command(booster_interface::msg::LowCmd & cmd)
   }
 
   cmd = construct_joint_command(current_joint_states, active_command);
-  
   if (command_reached) {
     command_running = false;
   }
@@ -149,8 +155,19 @@ bool JointManager::interpolate_command(booster_interface::msg::LowCmd & cmd)
 
 void JointManager::update_joint_state(const std::vector<MotorState> & state)
 {
-  current_joint_state = state;
+  current_joint_states = state;
   joint_state_received = true;
+}
+
+bool JointManager::get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const
+{
+  const auto index = joint_to_index(joint);
+  if (!has_joint_state() || index >= current_joint_states.size()) {
+    return false;
+  }
+
+  state = current_joint_states[index];
+  return true;
 }
 
 const std::vector<JointCommandTarget> & JointManager::get_target_command() const
