@@ -96,7 +96,7 @@ void JointManager::set_init_position()
   command_running = !active_command.empty();
 }
 
-bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
+bool JointManager::interpolate_command(booster_interface::msg::LowCmd & cmd)
 {
   if (should_publish_set_torque) {
     should_publish_set_torque = false;

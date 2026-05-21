@@ -18,7 +18,7 @@ public:
   void update_joint_state(const std::vector<MotorState> & state);
   void handle_set_joints(const std::vector<JointCommandTarget> & targets);
   void handle_set_torques(const std::vector<JointIndex> & joints, bool torque_enable);
-  bool tick_command(booster_interface::msg::LowCmd & cmd);
+  bool interpolate_command(booster_interface::msg::LowCmd & cmd);
 
   bool get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const;
   bool get_low_state(booster_interface::msg::LowState & state) const;

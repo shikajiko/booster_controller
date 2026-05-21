@@ -14,7 +14,6 @@ find_package(booster_joint_interface REQUIRED)
 add_library(${PROJECT_NAME}_lib
   src/joint_manager/joint_manager.cpp
   src/node/joint_manager_node.cpp
-  src/robot_mode_validator/robot_mode_validator.cpp
   src/utils/command_constructor.cpp
   src/utils/joint_mapping.cpp
 )

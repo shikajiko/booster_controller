@@ -20,7 +20,7 @@ inline constexpr float kMaxJointVelocity = 0.5F;  //rad/s
 inline constexpr float kWeightMargin = kJointWeightRate * kControlDt;
 inline constexpr float kBaseJointStep = kBaseJointVelocity * kControlDt;
 inline constexpr float kMaxJointDelta = kMaxJointVelocity * kControlDt;
-inline constexpr int kCommandTickMs = static_cast<int>(kControlDt / 0.001F);
+inline constexpr int kCommandFrequencyMs = static_cast<int>(kControlDt / 0.001F);
 
 inline constexpr std::array<float, kJointCnt> kDefaultJointKps = {
   40., 40.,

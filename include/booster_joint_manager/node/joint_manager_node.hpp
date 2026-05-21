@@ -10,7 +10,6 @@
 #include "booster_joint_manager/utils/command_constructor.hpp"
 #include "booster_joint_interface/msg/set_joints.hpp"
 #include "booster_joint_interface/msg/set_torques.hpp"
-#include "booster_joint_interface/srv/prepare_transition.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace booster_joint_manager
@@ -26,9 +25,6 @@ public:
   void print_all_joint_info();
 
 private:
-  using JointPrepareService = booster_joint_interface::srv::PrepareTransition;
-  using NextMode = booster_joint_interface::msg::TransitionCommand;
-
   rclcpp::Node::SharedPtr node;
   JointManager joint_manager;
 
@@ -36,7 +32,6 @@ private:
   rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr joint_state_subscriber;
   rclcpp::Subscription<booster_joint_interface::msg::SetJoints>::SharedPtr set_cmd_subscriber;
   rclcpp::Subscription<booster_joint_interface::msg::SetTorques>::SharedPtr set_torques_subscriber;
-  rclcpp::Service<JointPrepareService>::SharedPtr joint_prepare_service;
   rclcpp::TimerBase::SharedPtr command_timer;
 
   void publish_joint_cmd(const booster_interface::msg::LowCmd & cmd);

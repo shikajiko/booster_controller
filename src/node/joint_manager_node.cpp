@@ -53,10 +53,10 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
       std::placeholders::_2));
 
   command_timer = node->create_wall_timer(
-    std::chrono::milliseconds(kCommandTickMs),
+    std::chrono::milliseconds(kCommandFrequencyMs),
     [this](){
       booster_interface::msg::LowCmd cmd;
-      if (joint_manager.tick_command(cmd)) {
+      if (joint_manager.interpolate_command(cmd)) {
         publish_joint_cmd(cmd);
       }
     });
@@ -255,3 +255,10 @@ std::vector<JointIndex> JointManagerNode::id_to_joint_index(
   return joints;
 }
 }  // namespace booster_joint_manager
+
+
+//switch mode
+//custom to stand: go to stand pos first, then switch -> rpc must wait (?)
+//stand to custom: keep sending command for init while the rpc send switching request
+//upc on: send init while cranking weight from 0 to 0.5
+//upc off: send init while cranking down weight from 0.5 to 0
