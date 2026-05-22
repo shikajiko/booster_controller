@@ -59,7 +59,7 @@ bool JointTransitionHandler::handle_mode_switch(uint8_t target_mode, float & del
 {
     switch (target_mode) {
         case TransitionCommand::MODE_STAND:
-            delay_second = 2.5;
+            delay_second = 3.0;
             return joint_manager.set_init_pose(0.0, 0.0);
         case TransitionCommand::MODE_WALK:
             delay_second = 0.1;
@@ -75,10 +75,10 @@ bool JointTransitionHandler::handle_mode_switch(uint8_t target_mode, float & del
 
 bool JointTransitionHandler::handle_upper_control_switch(bool enable, float & delay_second) {
     if (enable) {
-        delay_second = 2.0;
+        delay_second = 3.0;
         return joint_manager.set_init_arms(0.0, 0.5);
     } else {
-        delay_second = 2.0;
+        delay_second = 3.0;
         return joint_manager.set_init_arms(0.5, 0.0);
     }
 
