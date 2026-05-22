@@ -51,7 +51,7 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     std::chrono::milliseconds(kCommandFrequencyMs),
     [this](){
       booster_interface::msg::LowCmd cmd;
-      if (joint_manager.interpolate_command(cmd)) {
+      if (joint_manager.tick_command(cmd)) {
         publish_joint_cmd(cmd);
       }
     });
@@ -131,11 +131,12 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
     if (joint.id >= kJointCnt) {
       continue;
     }
+    const auto target_pos = std::clamp(joint.position, kMinJointLimit[joint.id], kMaxJointLimit[joint.id]);
 
     targets.push_back(
       JointCommandTarget{
         static_cast<JointIndex>(joint.id),
-        joint.position,
+        target_pos,
         joint.velocity,
         0.5,
       });

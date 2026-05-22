@@ -46,6 +46,55 @@ inline constexpr std::array<float, kJointCnt> kStandPose = {
   -0.0, 0, 0, 0.105, -0.10, 0.
 };
 
+inline constexpr std::array<float, kJointCnt> kMinJointLimit = {
+    -1.029744f,  // Head Yaw Joint (-59°)
+    -0.331613f,  // Head Pitch Joint (-19°)
+    -2.949606f,  // Left Shoulder Pitch Joint (-169°)
+    -1.640609f,  // Left Shoulder Roll Joint (-94°)
+    -1.902409f,  // Left Shoulder Yaw Joint (-109°)
+    -2.251475f,  // Left Elbow Joint (-129°)
+    -2.949606f,  // Right Shoulder Pitch Joint (-169°)
+    -1.640609f,  // Right Shoulder Roll Joint (-94°)
+    -1.902409f,  // Right Shoulder Yaw Joint (-109°)
+    -0.680678f,  // Right Elbow Joint (-39°)
+    -2.967060f,  // Left Hip Pitch Joint (-170°)
+    -0.383972f,  // Left Hip Roll Joint (-22°)
+    -1.029744f,  // Left Hip Yaw Joint (-59°)
+     0.000000f,  // Left Knee Joint (0°)
+    -0.296706f,  // Left Ankle Up Joint (-17°)
+    -0.279253f,  // Left Ankle Down Joint (-16°)
+    -2.967060f,  // Right Hip Pitch Joint (-170°)
+    -1.553343f,  // Right Hip Roll Joint (-89°)
+    -1.029744f,  // Right Hip Yaw Joint (-59°)
+     0.000000f,  // Right Knee Joint (0°)
+    -0.296706f,  // Right Ankle Up Joint (-17°)
+    -0.279253f   // Right Ankle Down Joint (-16°)
+};
+
+inline constexpr std::array<float, kJointCnt> kMaxJointLimit = {
+     1.029744f,  // Head Yaw Joint (59°)
+     0.855211f,  // Head Pitch Joint (49°)
+     1.204277f,  // Left Shoulder Pitch Joint (69°)
+     1.640609f,  // Left Shoulder Roll Joint (94°)
+     1.902409f,  // Left Shoulder Yaw Joint (109°)
+     0.680678f,  // Left Elbow Joint (39°)
+     1.204277f,  // Right Shoulder Pitch Joint (69°)
+     1.640609f,  // Right Shoulder Roll Joint (94°)
+     1.902409f,  // Right Shoulder Yaw Joint (109°)
+     2.251475f,  // Right Elbow Joint (129°)
+     2.234021f,  // Left Hip Pitch Joint (128°)
+     1.553343f,  // Left Hip Roll Joint (89°)
+     1.029744f,  // Left Hip Yaw Joint (59°)
+     2.321288f,  // Left Knee Joint (133°)
+     0.663225f,  // Left Ankle Up Joint (38°)
+     0.715585f,  // Left Ankle Down Joint (41°)
+     2.234021f,  // Right Hip Pitch Joint (128°)
+     0.383972f,  // Right Hip Roll Joint (22°)
+     1.029744f,  // Right Hip Yaw Joint (59°)
+     2.321288f,  // Right Knee Joint (133°)
+     0.663225f,  // Right Ankle Up Joint (38°)
+     0.715585f   // Right Ankle Down Joint (41°)
+};
 struct JointCommandTarget
 {
   JointIndex joint;
