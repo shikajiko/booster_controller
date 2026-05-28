@@ -19,8 +19,8 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   active_command.clear();
 
   for (const auto & target : targets) {
-    const auto index = joint_to_index(target.joint);
-    if (index >= kJointCnt) {
+    const auto index = Joint::joint_to_index(target.joint);
+    if (index >= Joint::kJointCnt) {
       continue;
     }
     const auto current_q = current_joint_states[index].q;
@@ -38,7 +38,7 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   q_reached = false;
 }
 
-void JointManager::handle_set_torques(const std::vector<JointIndex> & joints, bool torque_enable)
+void JointManager::handle_set_torques(const std::vector<Joint::JointIndex> & joints, bool torque_enable)
 {
   if (joints.empty() || !has_joint_state() || command_running || should_publish_set_torque) {
     return;
@@ -47,8 +47,8 @@ void JointManager::handle_set_torques(const std::vector<JointIndex> & joints, bo
   std::vector<JointCommandTarget> target;
 
   for (auto joint : joints) {
-    const auto index = joint_to_index(joint);
-    if (index >= kJointCnt) {
+    const auto index = Joint::joint_to_index(joint);
+    if (index >= Joint::kJointCnt) {
       continue;
     }
     const auto current_q = current_joint_states[index].q;
@@ -75,10 +75,10 @@ bool JointManager::set_init_pose(float initial_weight, float target_weight)
   target_command.clear();
   active_command.clear();
 
-  for (const auto joint : kAllJoints) {
-    const auto index = joint_to_index(joint);
+  for (const auto joint : Joint::kAllJoints) {
+    const auto index = Joint::joint_to_index(joint);
     const auto current_q = current_joint_states[index].q;
-    const auto target_q = kStandPose[index];
+    const auto target_q = Joint::kStandPose[index];
     target_weight = std::clamp(target_weight, 0.0f, 1.0f);
     initial_weight = std::clamp(initial_weight, 0.0f, 1.0f);
 
@@ -113,10 +113,10 @@ bool JointManager::set_init_arms(float initial_weight, float target_weight)
   target_command.clear();
   active_command.clear();
 
-  for (const auto joint : kAllJoints) {
-    const auto index = joint_to_index(joint);
+  for (const auto joint : Joint::kAllJoints) {
+    const auto index = Joint::joint_to_index(joint);
     const auto current_q = current_joint_states[index].q;
-    const auto target_q = is_arm_joint(joint)? kStandPose[index] : current_q;
+    const auto target_q = Joint::is_arm_joint(joint)? Joint::kStandPose[index] : current_q;
     target_weight = std::clamp(target_weight, 0.0f, 1.0f);
     initial_weight = std::clamp(initial_weight, 0.0f, 1.0f);
 
@@ -197,7 +197,7 @@ void JointManager::update_joint_state(const std::vector<MotorState> & state)
 bool JointManager::interpolate_weight(float initial_weight, float target_weight) {
   bool weight_reached = true;
   bool increase_weight = target_weight > initial_weight;
-  float weight_margin = increase_weight? kWeightMargin : -kWeightMargin;
+  float weight_margin = increase_weight? Joint::kWeightMargin : -Joint::kWeightMargin;
 
   for (std::size_t i = 0; i < active_command.size(); i++) { 
     active_command[i].weight += weight_margin;
@@ -215,7 +215,8 @@ bool JointManager::interpolate_q() {
   bool command_reached = true;
   for (std::size_t i = 0; i < active_command.size(); i++) { 
     const auto velocity_scale = std::abs(active_command[i].velocity) > 0.0f ? std::abs(active_command[i].velocity) : 1.0f;
-    const auto max_joint_delta = std::clamp(kBaseJointStep * velocity_scale, 0.0f, kMaxJointDelta);
+    const auto max_joint_delta = std::clamp(
+      Joint::kBaseJointStep * velocity_scale, 0.0f, Joint::kMaxJointDelta);
 
     const auto delta_q = target_command[i].position - active_command[i].position;
     const auto joint_step = std::clamp(delta_q, -max_joint_delta, max_joint_delta);
@@ -230,9 +231,11 @@ bool JointManager::interpolate_q() {
   return command_reached;
 }
 
-bool JointManager::get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const
+bool JointManager::get_joint_state(
+  Joint::JointIndex joint,
+  booster_interface::msg::MotorState & state) const
 {
-  const auto index = joint_to_index(joint);
+  const auto index = Joint::joint_to_index(joint);
   if (!has_joint_state() || index >= current_joint_states.size()) {
     return false;
   }

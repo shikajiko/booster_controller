@@ -1,5 +1,6 @@
 #include "booster_joint_manager/node/joint_manager_node.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <memory>
 
@@ -48,7 +49,7 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
   joint_transition_handler = std::make_unique<JointTransitionHandler>(node, joint_manager);
 
   command_timer = node->create_wall_timer(
-    std::chrono::milliseconds(kCommandFrequencyMs),
+    std::chrono::milliseconds(Joint::kCommandFrequencyMs),
     [this](){
       booster_interface::msg::LowCmd cmd;
       if (joint_manager.tick_command(cmd)) {
@@ -63,13 +64,13 @@ void JointManagerNode::update_joint_state(const std::vector<booster_interface::m
 }
 
 bool JointManagerNode::get_joint_state(
-  JointIndex joint,
+  Joint::JointIndex joint,
   booster_interface::msg::MotorState & state) const
 {
   return joint_manager.get_joint_state(joint, state);
 }
 
-void JointManagerNode::print_joint_info(JointIndex joint)
+void JointManagerNode::print_joint_info(Joint::JointIndex joint)
 {
   booster_interface::msg::MotorState state;
   if (!get_joint_state(joint, state)) {
@@ -77,8 +78,8 @@ void JointManagerNode::print_joint_info(JointIndex joint)
       node->get_logger(),
       "joint %02d (%.*s): q unavailable",
       static_cast<int>(joint),
-      static_cast<int>(joint_name(joint).size()),
-      joint_name(joint).data());
+      static_cast<int>(Joint::joint_name(joint).size()),
+      Joint::joint_name(joint).data());
     return;
   }
 
@@ -86,15 +87,15 @@ void JointManagerNode::print_joint_info(JointIndex joint)
     node->get_logger(),
     "joint %02d (%.*s): q=% .4f",
     static_cast<int>(joint),
-    static_cast<int>(joint_name(joint).size()),
-    joint_name(joint).data(),
+    static_cast<int>(Joint::joint_name(joint).size()),
+    Joint::joint_name(joint).data(),
     state.q);
 }
 
 void JointManagerNode::print_all_joint_info()
 {
   RCLCPP_INFO(node->get_logger(), "Current joint q values:");
-  for (const auto joint : kAllJoints) {
+  for (const auto joint : Joint::kAllJoints) {
     print_joint_info(joint);
   }
 }
@@ -107,8 +108,8 @@ void JointManagerNode::print_target_command(const std::vector<JointCommandTarget
       node->get_logger(),
       "target joint %02d (%.*s): q=% .4f velocity=% .4f weight=% .4f",
       static_cast<int>(target.joint),
-      static_cast<int>(joint_name(target.joint).size()),
-      joint_name(target.joint).data(),
+      static_cast<int>(Joint::joint_name(target.joint).size()),
+      Joint::joint_name(target.joint).data(),
       target.position,
       target.velocity,
       target.weight);
@@ -128,14 +129,15 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   targets.reserve(msg.joints.size());
 
   for (const auto & joint : msg.joints) {
-    if (joint.id >= kJointCnt) {
+    if (joint.id >= Joint::kJointCnt) {
       continue;
     }
-    const auto target_pos = std::clamp(joint.position, kMinJointLimit[joint.id], kMaxJointLimit[joint.id]);
+    const auto target_pos = std::clamp(
+      joint.position, Joint::kMinJointLimit[joint.id], Joint::kMaxJointLimit[joint.id]);
 
     targets.push_back(
       JointCommandTarget{
-        static_cast<JointIndex>(joint.id),
+        static_cast<Joint::JointIndex>(joint.id),
         target_pos,
         joint.velocity,
         0.5,
@@ -145,17 +147,17 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   return targets;
 }
 
-std::vector<JointIndex> JointManagerNode::id_to_joint_index(
+std::vector<Joint::JointIndex> JointManagerNode::id_to_joint_index(
   const std::vector<uint8_t> & ids)
 {
-  std::vector<JointIndex> joints;
+  std::vector<Joint::JointIndex> joints;
   joints.reserve(ids.size());
 
   for (const auto id : ids) {
-    if (id >= kJointCnt) {
+    if (id >= Joint::kJointCnt) {
       continue;
     }
-    joints.push_back(static_cast<JointIndex>(id));
+    joints.push_back(static_cast<Joint::JointIndex>(id));
   }
 
   return joints;

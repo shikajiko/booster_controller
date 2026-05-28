@@ -10,20 +10,20 @@ booster_interface::msg::LowCmd construct_joint_command(
   booster_interface::msg::LowCmd cmd;
   cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_PARALLEL;
 
-  for (size_t i = 0; i< kJointCnt; i++) {
+  for (std::size_t i = 0; i < Joint::kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
     motor_cmd.q = current_joint_state[i].q;
-    motor_cmd.dq = kDefaultJointDq;
-    motor_cmd.kp = kDefaultJointKps[i];
-    motor_cmd.kd = kDefaultJointKds[i];
-    motor_cmd.tau = kDefaultJointTau;
-    motor_cmd.weight = kDefaultJointWeight;
+    motor_cmd.dq = Joint::kDefaultJointDq;
+    motor_cmd.kp = Joint::kDefaultJointKps[i];
+    motor_cmd.kd = Joint::kDefaultJointKds[i];
+    motor_cmd.tau = Joint::kDefaultJointTau;
+    motor_cmd.weight = Joint::kDefaultJointWeight;
     cmd.motor_cmd.push_back(motor_cmd);
   }
 
   for (const auto & target : targets) {
-    const auto index = joint_to_index(target.joint);
-    if (index >= kJointCnt) {
+    const auto index = Joint::joint_to_index(target.joint);
+    if (index >= Joint::kJointCnt) {
       continue;
     }
     cmd.motor_cmd.at(index).q       = target.position;
@@ -41,25 +41,25 @@ booster_interface::msg::LowCmd construct_set_torque_command(
   booster_interface::msg::LowCmd cmd;
   cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_PARALLEL;
 
-  for (size_t i = 0; i< kJointCnt; i++) {
+  for (std::size_t i = 0; i < Joint::kJointCnt; i++) {
     booster_interface::msg::MotorCmd motor_cmd;
     motor_cmd.q = current_joint_state[i].q;
-    motor_cmd.dq = kDefaultJointDq;
-    motor_cmd.kp = kDefaultJointKps[i];
-    motor_cmd.kd = kDefaultJointKds[i];
-    motor_cmd.tau = kDefaultJointTau;
-    motor_cmd.weight = kDefaultJointWeight;
+    motor_cmd.dq = Joint::kDefaultJointDq;
+    motor_cmd.kp = Joint::kDefaultJointKps[i];
+    motor_cmd.kd = Joint::kDefaultJointKds[i];
+    motor_cmd.tau = Joint::kDefaultJointTau;
+    motor_cmd.weight = Joint::kDefaultJointWeight;
     cmd.motor_cmd.push_back(motor_cmd);
   }
   for (const auto target : targets) {
-    const auto index = joint_to_index(target.joint);
-    if (index >= kJointCnt) continue;
+    const auto index = Joint::joint_to_index(target.joint);
+    if (index >= Joint::kJointCnt) continue;
     
     cmd.motor_cmd.at(index).q       = target.position;
-    cmd.motor_cmd.at(index).dq      = kDefaultJointDq;
-    cmd.motor_cmd.at(index).kp      = (enable_torque? kDefaultJointKps[index] : 0.);
-    cmd.motor_cmd.at(index).kd      = (enable_torque? kDefaultJointKds[index] : 0.);
-    cmd.motor_cmd.at(index).tau     = kDefaultJointTau;
+    cmd.motor_cmd.at(index).dq      = Joint::kDefaultJointDq;
+    cmd.motor_cmd.at(index).kp      = (enable_torque? Joint::kDefaultJointKps[index] : 0.);
+    cmd.motor_cmd.at(index).kd      = (enable_torque? Joint::kDefaultJointKds[index] : 0.);
+    cmd.motor_cmd.at(index).tau     = Joint::kDefaultJointTau;
     cmd.motor_cmd.at(index).weight  = target.weight;
   }
 

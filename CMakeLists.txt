@@ -16,7 +16,6 @@ add_library(${PROJECT_NAME}_lib
   src/node/joint_manager_node.cpp
   src/node/joint_transition_handler.cpp
   src/utils/command_constructor.cpp
-  src/utils/joint_mapping.cpp
 )
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME}_lib PUBLIC

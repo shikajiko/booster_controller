@@ -4,8 +4,8 @@
 
 #include "booster_interface/msg/low_state.hpp"
 #include "booster_interface/msg/motor_state.hpp"
+#include "booster_joint_manager/joint.hpp"
 #include "booster_joint_manager/utils/command_constructor.hpp"
-#include "booster_joint_manager/utils/joint_maps.hpp"
 
 namespace booster_joint_manager
 {
@@ -17,10 +17,10 @@ public:
 
   void update_joint_state(const std::vector<MotorState> & state);
   void handle_set_joints(const std::vector<JointCommandTarget> & targets);
-  void handle_set_torques(const std::vector<JointIndex> & joints, bool torque_enable);
+  void handle_set_torques(const std::vector<Joint::JointIndex> & joints, bool torque_enable);
   bool tick_command(booster_interface::msg::LowCmd & cmd);
 
-  bool get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const;
+  bool get_joint_state(Joint::JointIndex joint, booster_interface::msg::MotorState & state) const;
   const std::vector<JointCommandTarget> & get_target_command() const;
   bool has_joint_state() const;
   bool set_init_pose(float initial_weight, float target_weight);
