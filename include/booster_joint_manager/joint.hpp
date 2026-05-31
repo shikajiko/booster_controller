@@ -6,8 +6,22 @@
 
 #include "booster/robot/b1/b1_api_const.hpp"
 
+namespace booster_joint_manager 
+{
+  
+  struct JointCommandTarget
+{
+  Joint::JointIndex joint;
+  float position;
+  float velocity;
+  float weight;
+};
+
+}
+
 namespace booster_joint_manager::Joint
 {
+
 
 namespace b1 = booster::robot::b1;
 

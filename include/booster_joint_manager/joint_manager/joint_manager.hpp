@@ -29,7 +29,9 @@ public:
   bool interpolate_q();
 
 private:
+
   std::vector<MotorState> current_joint_states;
+  std::vector<double> joint_states_q;
   bool joint_state_received{false};
   booster_interface::msg::LowCmd torque_command;
   std::vector<JointCommandTarget> target_command;

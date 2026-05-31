@@ -6,6 +6,11 @@
 namespace booster_joint_manager
 {
 
+void JointManager::JointManager()
+{
+  joint_state_q.reserve(Joint::kJointCnt);
+}
+
 void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & targets)
 {
 
@@ -109,9 +114,8 @@ bool JointManager::set_init_arms(float initial_weight, float target_weight)
     if (!has_joint_state() || command_running || should_publish_set_torque) {
     return false;
   }
-
-  target_command.clear();
-  active_command.clear();
+    target_command.clear();
+    active_command.clear();
 
   for (const auto joint : Joint::kAllJoints) {
     const auto index = Joint::joint_to_index(joint);
@@ -191,6 +195,9 @@ bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
 void JointManager::update_joint_state(const std::vector<MotorState> & state)
 {
   current_joint_states = state;
+  for (int i = 0; i < Joint::kJointCnt; i++) {
+    joint_states_q[i] = current_joint_states[i].q;
+  } 
   joint_state_received = true;
 }
 

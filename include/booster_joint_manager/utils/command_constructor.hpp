@@ -10,14 +10,6 @@
 namespace booster_joint_manager
 {
 
-struct JointCommandTarget
-{
-  Joint::JointIndex joint;
-  float position;
-  float velocity;
-  float weight;
-};
-
 using MotorState = booster_interface::msg::MotorState;
 
 booster_interface::msg::LowCmd construct_joint_command(
