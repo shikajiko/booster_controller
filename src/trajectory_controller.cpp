@@ -63,7 +63,34 @@ rclcpp_action::GoalResponse TrajectoryController::handle_goal(
 rclcpp_action::CancelResponse TrajectoryController::handle_cancel(
     std::shared_ptr<GoalHandle> goal_handle)
 {
-    //TO DO: return the robot into safe position
+  if (!goal_handle) {
+    return rclcpp_action::CancelResponse::ACCEPT;
+  }
+
+  action_interface::msg::JointTrajectory trajectory;
+  action_interface::msg::JointTrajectoryPoint point;
+  point.positions.assign(Joint::kStandPose.begin(), Joint::kStandPose.end());
+  point.delay_before_seconds = 0.0;
+  point.duration_seconds = 2.0;
+  trajectory.points.push_back(point);
+
+  try {
+    interpolator.load(trajectory);
+  } catch (const std::exception& e) {
+    RCLCPP_WARN(node->get_logger(), "Failed to load stand trajectory on cancel: %s", e.what());
+    return rclcpp_action::CancelResponse::REJECT;
+  }
+
+  if (!prev_joint_states.empty()) {
+    std::vector<double> current;
+    current.reserve(prev_joint_states.size());
+    for (const auto& joint_state : prev_joint_states) {
+      current.push_back(joint_state.q);
+    }
+    interpolator.set_start_positions(current);
+  }
+
+  returning_to_stand = true;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -101,17 +128,22 @@ void TrajectoryController::update(
     auto positions = interpolator.sample(elapsed);
 
     command = construct_joint_command(prev_joint_states, next_command_target);
-    update_prev_joint(positions);
+    if (positions) {
+      update_prev_joint(*positions);
+    }
 
     if (!positions) {
-        auto end_pos = interpolator.end_position();
-        update_command_target(end_pos);
-        command = construct_joint_command(prev_joint_states, next_command_target);
-
         auto result = std::make_shared<Action::Result>();
         result->error_code   = 0;
-        result->error_string = "OK";
-        active_goal->succeed(result);
+        result->error_string = returning_to_stand
+          ? "Cancelled, returned to stand pose"
+          : "OK";
+        if (returning_to_stand) {
+          active_goal->canceled(result);
+          returning_to_stand = false;
+        } else {
+          active_goal->succeed(result);
+        }
         active_goal = nullptr;
         elapsed     = 0.0;
         return;
@@ -133,8 +165,15 @@ void TrajectoryController::abort_active_goal(
     result->error_code   = error_code;
     result->error_string = reason;
     active_goal->abort(result);
-    active_goal = nullptr;
-    elapsed     = 0.0;
+  active_goal = nullptr;
+  elapsed     = 0.0;
+}
+
+void TrajectoryController::start_return_to_stand(
+  const std::vector<double>& current_joint_q)
+{
+  (void)current_joint_q;
+  returning_to_stand = true;
 }
 
 void TrajectoryController::update_prev_joint(const std::vector<double> & position) 

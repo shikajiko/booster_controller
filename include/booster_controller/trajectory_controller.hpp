@@ -30,6 +30,7 @@ void update(
 
 void update_prev_joint(const std::vector<double> & position);
 void update_command_target(const std::vector<double> & position);
+void start_return_to_stand(const std::vector<double>& current_joint_q);
 
 private:
 rclcpp::Node::SharedPtr node;
