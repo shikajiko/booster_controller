@@ -13,16 +13,16 @@ namespace booster_joint_manager {
 class ReadJointProvider
 {
 public:
-  ReadJointProvider(
-    rclcpp::Node::SharedPtr node,
-    bool print_all,
-    std::vector<Joint::JointIndex> joints) 
+ReadJointProvider(
+  rclcpp::Node::SharedPtr node,
+  bool print_all,
+  std::vector<Joint::JointIndex> joints)
   : node(node), print_all(print_all), joints(joints)
-  {
-    low_state_subscriber = node->create_subscription<booster_interface::msg::LowState>(
-      "/low_state",
-      10,
-      [this](booster_interface::msg::LowState::SharedPtr msg) {
+{
+  low_state_subscriber = node->create_subscription<booster_interface::msg::LowState>(
+    "/low_state",
+    10,
+    [this](booster_interface::msg::LowState::SharedPtr msg) {
         if (this->print_all) {
           print_all_joint_info(msg->motor_state_parallel);
         } else {
@@ -34,15 +34,15 @@ public:
           }
         }
       });
-  }
+}
 
 private:
-  rclcpp::Node::SharedPtr node;
-  bool print_all;
-  std::vector<Joint::JointIndex> joints;
-  rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr low_state_subscriber; 
-  void print_joint_info(Joint::JointIndex joint, booster_interface::msg::MotorState state);
-  void print_all_joint_info(const std::vector<booster_interface::msg::MotorState> & states);  
+rclcpp::Node::SharedPtr node;
+bool print_all;
+std::vector<Joint::JointIndex> joints;
+rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr low_state_subscriber;
+void print_joint_info(Joint::JointIndex joint, booster_interface::msg::MotorState state);
+void print_all_joint_info(const std::vector<booster_interface::msg::MotorState> & states);
 };
 
 void ReadJointProvider::print_joint_info(
@@ -81,7 +81,7 @@ int main(int argc, char * argv[])
   for (int i = 1; i < argc; ++i) {
     const auto joint = std::atoi(argv[i]);
     if (joint >= 0 &&
-      static_cast<std::size_t>(joint) < booster_joint_manager::Joint::kJointCnt)
+        static_cast<std::size_t>(joint) < booster_joint_manager::Joint::kJointCnt)
     {
       joints.push_back(static_cast<booster_joint_manager::Joint::JointIndex>(joint));
     }

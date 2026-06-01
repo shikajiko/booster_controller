@@ -64,11 +64,11 @@ void JointManager::handle_set_torques(const std::vector<Joint::JointIndex> & joi
         1.,
         0.5
       }
-    );
+      );
   }
 
   torque_command = construct_set_torque_command(current_joint_states, target, torque_enable);
-  should_publish_set_torque = true; 
+  should_publish_set_torque = true;
 }
 
 bool JointManager::set_init_pose(float initial_weight, float target_weight)
@@ -109,13 +109,13 @@ bool JointManager::set_init_pose(float initial_weight, float target_weight)
   return true;
 }
 
-bool JointManager::set_init_arms(float initial_weight, float target_weight) 
+bool JointManager::set_init_arms(float initial_weight, float target_weight)
 {
-    if (!has_joint_state() || command_running || should_publish_set_torque) {
+  if (!has_joint_state() || command_running || should_publish_set_torque) {
     return false;
   }
-    target_command.clear();
-    active_command.clear();
+  target_command.clear();
+  active_command.clear();
 
   for (const auto joint : Joint::kAllJoints) {
     const auto index = Joint::joint_to_index(joint);
@@ -177,9 +177,9 @@ bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
     const bool done = interpolate_weight(active_command[0].weight, target_command[0].weight);
     cmd = construct_joint_command(current_joint_states, active_command);
 
-    if (done) { 
-      command_running = false; 
-      q_reached = false; 
+    if (done) {
+      command_running = false;
+      q_reached = false;
     }
 
     return true;
@@ -188,7 +188,7 @@ bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
   const bool done = interpolate_q();
   cmd = construct_joint_command(current_joint_states, active_command);
 
-  if (done) command_running = false; 
+  if (done) command_running = false;
   return true;
 }
 
@@ -197,7 +197,7 @@ void JointManager::update_joint_state(const std::vector<MotorState> & state)
   current_joint_states = state;
   for (int i = 0; i < Joint::kJointCnt; i++) {
     joint_states_q[i] = current_joint_states[i].q;
-  } 
+  }
   joint_state_received = true;
 }
 
@@ -206,12 +206,12 @@ bool JointManager::interpolate_weight(float initial_weight, float target_weight)
   bool increase_weight = target_weight > initial_weight;
   float weight_margin = increase_weight? Joint::kWeightMargin : -Joint::kWeightMargin;
 
-  for (std::size_t i = 0; i < active_command.size(); i++) { 
+  for (std::size_t i = 0; i < active_command.size(); i++) {
     active_command[i].weight += weight_margin;
     active_command[i].weight = std::clamp(active_command[i].weight, 0.f, 1.f);
 
     if (std::abs(active_command[i].weight - target_command[i].weight) > 0.01F) {
-        weight_reached = false;
+      weight_reached = false;
     }
   }
 
@@ -220,7 +220,7 @@ bool JointManager::interpolate_weight(float initial_weight, float target_weight)
 
 bool JointManager::interpolate_q() {
   bool command_reached = true;
-  for (std::size_t i = 0; i < active_command.size(); i++) { 
+  for (std::size_t i = 0; i < active_command.size(); i++) {
     const auto velocity_scale = std::abs(active_command[i].velocity) > 0.0f ? std::abs(active_command[i].velocity) : 1.0f;
     const auto max_joint_delta = std::clamp(
       Joint::kBaseJointStep * velocity_scale, 0.0f, Joint::kMaxJointDelta);

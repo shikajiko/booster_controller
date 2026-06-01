@@ -1,21 +1,30 @@
 #pragma once
-#include "booster_controller/controller_interface.hpp"
-#include "booster_controller/interpolator.hpp"
+
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "action_interface/action/action_trajectory.hpp"
+#include "booster_controller/controller_interface.hpp"
+#include "booster_joint_manager/interpolator.hpp"
 #include <rclcpp_action/rclcpp_action.hpp>
+
+namespace booster_joint_manager
+{
 
 class TrajectoryController : public IController {
 public:
-  using Action       = action_interface::action::ActionTrajectory;
-  using GoalHandle   = rclcpp_action::ServerGoalHandle<Action>;
+  using Action = action_interface::action::ActionTrajectory;
+  using GoalHandle = rclcpp_action::ServerGoalHandle<Action>;
 
   void init(rclcpp::Node::SharedPtr node) override;
-  void activate()   override;
+  void activate() override;
   void deactivate() override;
 
-  void update(double dt,
-              const sensor_msgs::msg::JointState& current,
-              sensor_msgs::msg::JointState& command) override;
+  void update(
+    double dt,
+    const sensor_msgs::msg::JointState& current,
+    sensor_msgs::msg::JointState& command) override;
 
 private:
   rclcpp::Node::SharedPtr node;
@@ -24,7 +33,7 @@ private:
   Interpolator interpolator;
   std::shared_ptr<GoalHandle> active_goal;
   double elapsed = 0.0;
-  bool   executing = false;
+  bool executing = false;
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID& uuid,
@@ -37,3 +46,5 @@ private:
 
   void abort_active_goal(int32_t error_code, const std::string& reason);
 };
+
+}  // namespace booster_joint_manager

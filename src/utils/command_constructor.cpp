@@ -54,7 +54,7 @@ booster_interface::msg::LowCmd construct_set_torque_command(
   for (const auto target : targets) {
     const auto index = Joint::joint_to_index(target.joint);
     if (index >= Joint::kJointCnt) continue;
-    
+
     cmd.motor_cmd.at(index).q       = target.position;
     cmd.motor_cmd.at(index).dq      = Joint::kDefaultJointDq;
     cmd.motor_cmd.at(index).kp      = (enable_torque? Joint::kDefaultJointKps[index] : 0.);

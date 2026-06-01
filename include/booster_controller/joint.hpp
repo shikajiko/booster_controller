@@ -6,15 +6,15 @@
 
 #include "booster/robot/b1/b1_api_const.hpp"
 
-namespace booster_joint_manager 
+namespace booster_joint_manager
 {
-  
-  struct JointCommandTarget
+
+struct JointCommandTarget
 {
   Joint::JointIndex joint;
   float position;
-  float velocity;
-  float weight;
+  float velocity = 0;
+  float weight = 1;
 };
 
 }
@@ -154,50 +154,50 @@ inline constexpr std::array<float, kJointCnt> kMaxJointLimit = {
 constexpr std::string_view joint_name(JointIndex joint)
 {
   switch (joint) {
-    case JointIndex::kHeadYaw:
-      return "HeadYaw";
-    case JointIndex::kHeadPitch:
-      return "HeadPitch";
-    case JointIndex::kLeftShoulderPitch:
-      return "LeftShoulderPitch";
-    case JointIndex::kLeftShoulderRoll:
-      return "LeftShoulderRoll";
-    case JointIndex::kLeftElbowPitch:
-      return "LeftElbowPitch";
-    case JointIndex::kLeftElbowYaw:
-      return "LeftElbowYaw";
-    case JointIndex::kRightShoulderPitch:
-      return "RightShoulderPitch";
-    case JointIndex::kRightShoulderRoll:
-      return "RightShoulderRoll";
-    case JointIndex::kRightElbowPitch:
-      return "RightElbowPitch";
-    case JointIndex::kRightElbowYaw:
-      return "RightElbowYaw";
-    case JointIndex::kLeftHipPitch:
-      return "LeftHipPitch";
-    case JointIndex::kLeftHipRoll:
-      return "LeftHipRoll";
-    case JointIndex::kLeftHipYaw:
-      return "LeftHipYaw";
-    case JointIndex::kLeftKneePitch:
-      return "LeftKneePitch";
-    case JointIndex::kCrankUpLeft:
-      return "CrankUpLeft";
-    case JointIndex::kCrankDownLeft:
-      return "CrankDownLeft";
-    case JointIndex::kRightHipPitch:
-      return "RightHipPitch";
-    case JointIndex::kRightHipRoll:
-      return "RightHipRoll";
-    case JointIndex::kRightHipYaw:
-      return "RightHipYaw";
-    case JointIndex::kRightKneePitch:
-      return "RightKneePitch";
-    case JointIndex::kCrankUpRight:
-      return "CrankUpRight";
-    case JointIndex::kCrankDownRight:
-      return "CrankDownRight";
+  case JointIndex::kHeadYaw:
+    return "HeadYaw";
+  case JointIndex::kHeadPitch:
+    return "HeadPitch";
+  case JointIndex::kLeftShoulderPitch:
+    return "LeftShoulderPitch";
+  case JointIndex::kLeftShoulderRoll:
+    return "LeftShoulderRoll";
+  case JointIndex::kLeftElbowPitch:
+    return "LeftElbowPitch";
+  case JointIndex::kLeftElbowYaw:
+    return "LeftElbowYaw";
+  case JointIndex::kRightShoulderPitch:
+    return "RightShoulderPitch";
+  case JointIndex::kRightShoulderRoll:
+    return "RightShoulderRoll";
+  case JointIndex::kRightElbowPitch:
+    return "RightElbowPitch";
+  case JointIndex::kRightElbowYaw:
+    return "RightElbowYaw";
+  case JointIndex::kLeftHipPitch:
+    return "LeftHipPitch";
+  case JointIndex::kLeftHipRoll:
+    return "LeftHipRoll";
+  case JointIndex::kLeftHipYaw:
+    return "LeftHipYaw";
+  case JointIndex::kLeftKneePitch:
+    return "LeftKneePitch";
+  case JointIndex::kCrankUpLeft:
+    return "CrankUpLeft";
+  case JointIndex::kCrankDownLeft:
+    return "CrankDownLeft";
+  case JointIndex::kRightHipPitch:
+    return "RightHipPitch";
+  case JointIndex::kRightHipRoll:
+    return "RightHipRoll";
+  case JointIndex::kRightHipYaw:
+    return "RightHipYaw";
+  case JointIndex::kRightKneePitch:
+    return "RightKneePitch";
+  case JointIndex::kCrankUpRight:
+    return "CrankUpRight";
+  case JointIndex::kCrankDownRight:
+    return "CrankDownRight";
   }
 
   return "Unknown";

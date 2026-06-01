@@ -1,4 +1,4 @@
-#include "booster_joint_manager/node/joint_manager_node.hpp"
+#include "booster_controller/node/controller_manager_node.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -15,8 +15,9 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     10,
     [this](booster_interface::msg::LowState::SharedPtr msg) {
       update_joint_state(msg->motor_state_parallel);
+      trajectory_controller->update_joint_state(msg->motor_state_parallel);
     });
-  
+
   joint_cmd_publisher =
     node->create_publisher<booster_interface::msg::LowCmd>("/joint_ctrl", 10);
 
@@ -31,7 +32,7 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
       auto targets = joint_msg_to_target(*msg);
       joint_manager.handle_set_joints(targets);
     });
-  
+
   set_torques_subscriber = node->create_subscription<booster_joint_interface::msg::SetTorques>(
     "joint/set_torques",
     10,
@@ -44,9 +45,11 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
       auto joints = id_to_joint_index(msg->ids);
       joint_manager.handle_set_torques(joints, msg->torque_enable);
     }
-  );
+    );
 
   joint_transition_handler = std::make_unique<JointTransitionHandler>(node, joint_manager);
+  trajectory_controller = std::make_unique<TrajectoryController>();
+  trajectory_controller->init(node);
 
   command_timer = node->create_wall_timer(
     std::chrono::milliseconds(Joint::kCommandFrequencyMs),
@@ -163,10 +166,3 @@ std::vector<Joint::JointIndex> JointManagerNode::id_to_joint_index(
   return joints;
 }
 }  // namespace booster_joint_manager
-
-
-//switch mode
-//custom to stand: go to stand pos first, then switch -> rpc must wait (?)
-//stand to custom: keep sending command for init while the rpc send switching request
-//upc on: send init while cranking weight from 0 to 0.5
-//upc off: send init while cranking down weight from 0.5 to 0
