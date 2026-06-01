@@ -14,8 +14,8 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     "/low_state",
     10,
     [this](booster_interface::msg::LowState::SharedPtr msg) {
+      current_joint_states = msg->motor_state_parallel;
       update_joint_state(msg->motor_state_parallel);
-      trajectory_controller->update_joint_state(msg->motor_state_parallel);
     });
 
   joint_cmd_publisher =
@@ -55,7 +55,26 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     std::chrono::milliseconds(Joint::kCommandFrequencyMs),
     [this](){
       booster_interface::msg::LowCmd cmd;
-      if (joint_manager.tick_command(cmd)) {
+      if (trajectory_controller && trajectory_controller->has_work()) {
+        std::vector<double> current_joint_q;
+        current_joint_q.reserve(current_joint_states.size());
+        for (const auto& state : current_joint_states) {
+          current_joint_q.push_back(state.q);
+        }
+
+        trajectory_controller->activate();
+        trajectory_controller->update(
+          Joint::kControlDt,
+          current_joint_q,
+          &cmd);
+
+        publish_joint_cmd(cmd);
+
+        if (!trajectory_controller->has_work()) {
+          trajectory_controller->deactivate();
+        }
+        
+      } else if (joint_manager.tick_command(cmd)) {
         publish_joint_cmd(cmd);
       }
     });

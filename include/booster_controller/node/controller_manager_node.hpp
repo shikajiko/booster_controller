@@ -9,6 +9,7 @@
 #include "booster_joint_manager/joint.hpp"
 #include "booster_joint_manager/joint_manager/joint_manager.hpp"
 #include "booster_joint_manager/node/joint_transition_handler.hpp"
+#include "booster_controller/trajectory_controller.hpp"
 #include "booster_joint_manager/utils/command_constructor.hpp"
 #include "booster_joint_interface/msg/set_joints.hpp"
 #include "booster_joint_interface/msg/set_torques.hpp"
@@ -31,6 +32,7 @@ rclcpp::Node::SharedPtr node;
 JointManager joint_manager;
 std::unique_ptr<JointTransitionHandler> joint_transition_handler;
 std::shared_ptr<TrajectoryController> trajectory_controller;
+std::vector<booster_interface::msg::MotorState> current_joint_states;
 
 rclcpp::Publisher<booster_interface::msg::LowCmd>::SharedPtr joint_cmd_publisher;
 rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr joint_state_subscriber;

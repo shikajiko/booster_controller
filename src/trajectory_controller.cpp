@@ -1,17 +1,17 @@
-#include "booster_controller/joint_trajectory_controller.hpp"
+#include "booster_controller/trajectory_controller.hpp"
 
 using Action     = TrajectoryController::Action;
 using GoalHandle = TrajectoryController::GoalHandle;
 
 void TrajectoryController::init(rclcpp::Node::SharedPtr node) 
 {
-  this.node = node;
+  this->node = node;
   action_server = rclcpp_action::create_server<Action>(
     node,
     "controller/run_trajectory",
-    std::bind(&JointTrajectoryController::handle_goal,     this, _1, _2),
-    std::bind(&JointTrajectoryController::handle_cancel,   this, _1),
-    std::bind(&JointTrajectoryController::handle_accepted, this, _1));
+    std::bind(&TrajectoryController::handle_goal, this, _1, _2),
+    std::bind(&TrajectoryController::handle_cancel, this, _1),
+    std::bind(&TrajectoryController::handle_accepted, this, _1));
 }
 
 void TrajectoryController::activate() 
@@ -40,15 +40,9 @@ rclcpp_action::GoalResponse TrajectoryController::handle_goal(
   std::shared_ptr<const Action::Goal> goal)
 {
   if (active_goal) {
-    RCLCPP_WARN(node_->get_logger(),
+    RCLCPP_WARN(node->get_logger(),
     "Action rejected, another action is still running");
     return rclcpp_action::GoalResponse::REJECT;
-  }
-
-  if (!executing) {
-      RCLCPP_WARN(node_->get_logger(),
-      "Action rejected, joint trajectory is not executing");
-      return rclcpp_action::GoalResponse::REJECT;
   }
 
   if (goal->trajectory.points.empty()) {
@@ -112,14 +106,17 @@ void TrajectoryController::handle_accepted(std::shared_ptr<GoalHandle> goal_hand
 void TrajectoryController::update(
     double dt,
     const std::vector<double>& current_joint_q,
-    booster_interface::msg::LowCmd& command)
+    booster_interface::msg::LowCmd* command)
 {
-    if (!active_goal) {
+    if (!command) {
         return;
     }
 
-    if (elapsed == 0.0) 
-    {
+    if (!has_work()) {
+        return;
+    }
+
+    if (elapsed == 0.0) {
       interpolator.set_start_positions(current_joint_q);
       update_prev_joint(current_joint_q);
     }
@@ -127,7 +124,7 @@ void TrajectoryController::update(
     elapsed += dt;
     auto positions = interpolator.sample(elapsed);
 
-    command = construct_joint_command(prev_joint_states, next_command_target);
+    *command = construct_joint_command(prev_joint_states, next_command_target);
     if (positions) {
       update_prev_joint(*positions);
     }
@@ -152,7 +149,7 @@ void TrajectoryController::update(
     auto feedback = std::make_shared<Action::Feedback>();
     feedback->has_run_for_seconds = elapsed;
     feedback->desired.positions = *positions;
-    feedback->actual.positions = current.position;
+    feedback->actual.positions = current_joint_q;
 
     active_goal->publish_feedback(feedback);
 }
@@ -174,6 +171,11 @@ void TrajectoryController::start_return_to_stand(
 {
   (void)current_joint_q;
   returning_to_stand = true;
+}
+
+bool TrajectoryController::has_work() const
+{
+  return active_goal != nullptr || returning_to_stand;
 }
 
 void TrajectoryController::update_prev_joint(const std::vector<double> & position) 
