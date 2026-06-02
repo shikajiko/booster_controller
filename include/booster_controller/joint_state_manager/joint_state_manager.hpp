@@ -2,15 +2,15 @@
 
 #include <vector>
 
-#include "booster_controller/joint.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 #include "booster_interface/msg/motor_state.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 using MotorState = booster_interface::msg::MotorState;
 
-class JointManager {
+class JointStateManager {
 public:
   void update_joint_state(const std::vector<MotorState>& state);
   bool get_joint_state(Joint::JointIndex joint, MotorState& state) const;
@@ -22,4 +22,4 @@ private:
   bool joint_state_received = false;
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

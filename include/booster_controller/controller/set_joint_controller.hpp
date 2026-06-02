@@ -2,11 +2,11 @@
 
 #include <vector>
 
-#include "booster_controller/controller_interface.hpp"
-#include "booster_controller/interpolator.hpp"
-#include "booster_controller/joint.hpp"
+#include "booster_controller/interface/controller_interface.hpp"
+#include "booster_controller/utils/interpolator.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 class SetJointController : public IController {
@@ -32,4 +32,4 @@ private:
     const std::vector<double>& positions);
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

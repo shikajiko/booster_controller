@@ -1,6 +1,6 @@
 #include "booster_controller/utils/command_constructor.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 booster_interface::msg::LowCmd construct_joint_command(
@@ -66,4 +66,4 @@ booster_interface::msg::LowCmd construct_set_torque_command(
   return cmd;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

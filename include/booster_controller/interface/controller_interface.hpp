@@ -6,7 +6,7 @@
 #include <booster_interface/msg/motor_state.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 class IController {
@@ -23,4 +23,4 @@ public:
   virtual ~IController() = default;
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

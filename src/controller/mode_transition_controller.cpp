@@ -1,11 +1,11 @@
-#include "booster_controller/mode_transition_controller.hpp"
+#include "booster_controller/controller/mode_transition_controller.hpp"
 
 #include <cstddef>
 
 #include "action_interface/msg/joint_trajectory.hpp"
 #include "booster_controller/utils/command_constructor.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 bool ModeTransitionController::submit_mode_switch(
@@ -132,4 +132,4 @@ std::vector<JointCommandTarget> ModeTransitionController::targets_from_positions
   return targets;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

@@ -1,4 +1,4 @@
-#include "booster_controller/joint.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 #include "booster_interface/msg/low_state.hpp"
 #include "booster_interface/msg/motor_state.hpp"
 
@@ -8,7 +8,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-namespace booster_joint_manager {
+namespace booster_controller {
 
 class ReadJointProvider
 {
@@ -77,19 +77,19 @@ int main(int argc, char * argv[])
 {
 
   bool all_joint = argc == 1? true : false;
-  std::vector<booster_joint_manager::Joint::JointIndex> joints;
+  std::vector<booster_controller::Joint::JointIndex> joints;
   for (int i = 1; i < argc; ++i) {
     const auto joint = std::atoi(argv[i]);
     if (joint >= 0 &&
-        static_cast<std::size_t>(joint) < booster_joint_manager::Joint::kJointCnt)
+        static_cast<std::size_t>(joint) < booster_controller::Joint::kJointCnt)
     {
-      joints.push_back(static_cast<booster_joint_manager::Joint::JointIndex>(joint));
+      joints.push_back(static_cast<booster_controller::Joint::JointIndex>(joint));
     }
   }
   rclcpp::init(argc, argv);
 
   const auto node = std::make_shared<rclcpp::Node>("read_joint_node");
-  const booster_joint_manager::ReadJointProvider read_joint_provider(node, all_joint, joints);
+  const booster_controller::ReadJointProvider read_joint_provider(node, all_joint, joints);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

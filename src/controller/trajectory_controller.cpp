@@ -1,11 +1,11 @@
-#include "booster_controller/trajectory_controller.hpp"
+#include "booster_controller/controller/trajectory_controller.hpp"
 
 #include <stdexcept>
 #include <utility>
 
 #include "booster_controller/utils/command_constructor.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 using Action = TrajectoryController::Action;
@@ -153,4 +153,4 @@ std::vector<JointCommandTarget> TrajectoryController::targets_from_positions(
   return targets;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

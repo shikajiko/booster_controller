@@ -8,6 +8,7 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>booster_model</depend>
   <depend>booster_interface</depend>
   <depend>booster_joint_interface</depend>
   <depend>action_interface</depend>

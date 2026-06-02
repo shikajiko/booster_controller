@@ -1,8 +1,8 @@
-#include "booster_controller/torque_controller.hpp"
+#include "booster_controller/controller/torque_controller.hpp"
 
 #include "booster_controller/utils/command_constructor.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 bool TorqueController::submit(const std::vector<Joint::JointIndex>& joints, bool enable_torque)
@@ -52,4 +52,4 @@ bool TorqueController::has_work() const
   return command_pending;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

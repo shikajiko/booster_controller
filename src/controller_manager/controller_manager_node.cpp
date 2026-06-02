@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 ControllerManagerNode::ControllerManagerNode(const rclcpp::Node::SharedPtr& node) : node(node)
@@ -478,36 +478,6 @@ bool ControllerManagerNode::get_joint_state(
   return joint_manager.get_joint_state(joint, state);
 }
 
-void ControllerManagerNode::print_joint_info(Joint::JointIndex joint)
-{
-  booster_interface::msg::MotorState state;
-  if (!get_joint_state(joint, state)) {
-    RCLCPP_WARN(
-      node->get_logger(),
-      "joint %02d (%.*s): q unavailable",
-      static_cast<int>(joint),
-      static_cast<int>(Joint::joint_name(joint).size()),
-      Joint::joint_name(joint).data());
-    return;
-  }
-
-  RCLCPP_INFO(
-    node->get_logger(),
-    "joint %02d (%.*s): q=% .4f",
-    static_cast<int>(joint),
-    static_cast<int>(Joint::joint_name(joint).size()),
-    Joint::joint_name(joint).data(),
-    state.q);
-}
-
-void ControllerManagerNode::print_all_joint_info()
-{
-  RCLCPP_INFO(node->get_logger(), "Current joint q values:");
-  for (const auto joint : Joint::kAllJoints) {
-    print_joint_info(joint);
-  }
-}
-
 void ControllerManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd& cmd)
 {
   joint_cmd_publisher->publish(cmd);
@@ -555,4 +525,4 @@ std::vector<Joint::JointIndex> ControllerManagerNode::id_to_joint_index(
   return joints;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

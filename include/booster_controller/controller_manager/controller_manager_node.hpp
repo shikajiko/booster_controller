@@ -4,12 +4,12 @@
 #include <string_view>
 #include <vector>
 
-#include "booster_controller/joint.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 #include "booster_controller/joint_manager/joint_manager.hpp"
-#include "booster_controller/mode_transition_controller.hpp"
-#include "booster_controller/set_joint_controller.hpp"
-#include "booster_controller/torque_controller.hpp"
-#include "booster_controller/trajectory_controller.hpp"
+#include "booster_controller/controller/mode_transition_controller.hpp"
+#include "booster_controller/controller/set_joint_controller.hpp"
+#include "booster_controller/controller/torque_controller.hpp"
+#include "booster_controller/controller/trajectory_controller.hpp"
 #include "action_interface/action/action_trajectory.hpp"
 #include "booster_interface/msg/low_cmd.hpp"
 #include "booster_interface/msg/low_state.hpp"
@@ -20,7 +20,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 class ControllerManagerNode {
@@ -28,8 +28,6 @@ public:
   explicit ControllerManagerNode(const rclcpp::Node::SharedPtr& node);
 
   bool get_joint_state(Joint::JointIndex joint, booster_interface::msg::MotorState& state) const;
-  void print_joint_info(Joint::JointIndex joint);
-  void print_all_joint_info();
 
 private:
   enum class ActiveController {
@@ -90,4 +88,4 @@ private:
 
 using JointManagerNode = ControllerManagerNode;
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

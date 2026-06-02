@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "booster_controller/controller_interface.hpp"
-#include "booster_controller/joint.hpp"
+#include "booster_controller/interface/controller_interface.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 class TorqueController : public IController {
@@ -24,4 +24,4 @@ private:
   bool command_pending = false;
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

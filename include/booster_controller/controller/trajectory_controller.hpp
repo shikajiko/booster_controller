@@ -4,11 +4,11 @@
 #include <vector>
 
 #include "action_interface/action/action_trajectory.hpp"
-#include "booster_controller/controller_interface.hpp"
-#include "booster_controller/interpolator.hpp"
+#include "booster_controller/interface/controller_interface.hpp"
+#include "booster_controller/utils/interpolator.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 class TrajectoryController : public IController {
@@ -41,4 +41,4 @@ private:
     const std::vector<double>& positions);
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

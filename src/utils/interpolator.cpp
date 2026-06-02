@@ -1,11 +1,11 @@
-#include "booster_controller/interpolator.hpp"
+#include "booster_controller/utils/interpolator.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <stdexcept>
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 void Interpolator::load(const action_interface::msg::JointTrajectory& trajectory)
@@ -126,4 +126,4 @@ std::vector<double> Interpolator::lerp(
   return result;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

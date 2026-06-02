@@ -1,4 +1,4 @@
-#include "booster_controller/set_joint_controller.hpp"
+#include "booster_controller/controller/set_joint_controller.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -6,7 +6,7 @@
 #include "action_interface/msg/joint_trajectory.hpp"
 #include "booster_controller/utils/command_constructor.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 bool SetJointController::submit(
@@ -99,4 +99,4 @@ std::vector<JointCommandTarget> SetJointController::targets_from_positions(
   return targets;
 }
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller

@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "action_interface/msg/joint_trajectory.hpp"
-#include "booster_controller/joint.hpp"
+#include "booster_controller/utils/joint_command.hpp"
 
-namespace booster_joint_manager
+namespace booster_controller
 {
 
 struct Step {
@@ -40,4 +40,4 @@ private:
     double alpha);
 };
 
-}  // namespace booster_joint_manager
+}  // namespace booster_controller
