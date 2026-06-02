@@ -5,7 +5,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   const auto node = std::make_shared<rclcpp::Node>("controller");
-  const booster_joint_manager::JointManagerNode controller_manager_node(node);
+  const booster_joint_manager::ControllerManagerNode controller_manager_node(node);
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;

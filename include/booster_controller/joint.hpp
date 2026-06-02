@@ -6,19 +6,6 @@
 
 #include "booster/robot/b1/b1_api_const.hpp"
 
-namespace booster_joint_manager
-{
-
-struct JointCommandTarget
-{
-  Joint::JointIndex joint;
-  float position;
-  float velocity = 0;
-  float weight = 1;
-};
-
-}
-
 namespace booster_joint_manager::Joint
 {
 
@@ -225,5 +212,13 @@ namespace booster_joint_manager
 {
 
 using JointIndex = Joint::JointIndex;
+
+struct JointCommandTarget
+{
+  Joint::JointIndex joint;
+  float position;
+  float velocity = 0.0F;
+  float weight = 1.0F;
+};
 
 }  // namespace booster_joint_manager

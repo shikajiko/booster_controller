@@ -5,7 +5,7 @@
 #include "booster_interface/msg/low_cmd.hpp"
 #include "booster_interface/msg/low_state.hpp"
 #include "booster_interface/msg/motor_state.hpp"
-#include "booster_joint_manager/joint.hpp"
+#include "booster_controller/joint.hpp"
 
 namespace booster_joint_manager
 {

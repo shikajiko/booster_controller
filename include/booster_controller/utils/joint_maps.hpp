@@ -1,6 +1,6 @@
 #pragma once
 
-#include "booster_joint_manager/joint.hpp"
+#include "booster_controller/joint.hpp"
 
 namespace booster_joint_manager
 {

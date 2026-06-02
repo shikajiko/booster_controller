@@ -1,4 +1,4 @@
-#include "booster_joint_manager/utils/command_constructor.hpp"
+#include "booster_controller/utils/command_constructor.hpp"
 
 namespace booster_joint_manager
 {
