@@ -1,5 +1,4 @@
 #include "booster_controller/utils/interpolator.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -14,7 +13,7 @@ void Interpolator::load(const action_interface::msg::JointTrajectory& trajectory
   final_position.clear();
   last_sent_position.clear();
   total_duration = 0.0;
-
+  current_step_index = 0;  
   if (trajectory.points.empty()) {
     throw std::invalid_argument("Trajectory has no points");
   }
@@ -25,16 +24,13 @@ void Interpolator::load(const action_interface::msg::JointTrajectory& trajectory
     if (point.positions.size() != Joint::kJointCnt) {
       throw std::invalid_argument("Number of joints does not match joint count");
     }
-
     std::vector<double> start_position =
       (i == 0) ? std::vector<double>(Joint::kJointCnt, 0.0)
                : trajectory.points[i - 1].positions;
-
     cursor += point.delay_before_seconds;
     const double start_time = cursor;
     cursor += point.duration_seconds;
     const double end_time = cursor;
-
     steps.push_back({start_time, end_time, start_position, point.positions});
   }
 
@@ -48,7 +44,6 @@ void Interpolator::set_start_positions(const std::vector<double>& current_joint_
   if (current_joint_position.size() != Joint::kJointCnt) {
     return;
   }
-
   if (!steps.empty()) {
     steps.front().start_position = current_joint_position;
     last_sent_position = current_joint_position;
@@ -57,29 +52,42 @@ void Interpolator::set_start_positions(const std::vector<double>& current_joint_
 
 std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
 {
-  for (const auto& step : steps) {
-    if (time_seconds < step.start_time) {
-      last_sent_position = step.start_position;
-      return last_sent_position;
-    }
+  if (steps.empty()) {
+    return std::nullopt;
+  }
 
-    if (time_seconds <= step.end_time) {
-      const double duration = step.end_time - step.start_time;
-      const double alpha = duration <= 0.0
-        ? 1.0
-        : std::clamp((time_seconds - step.start_time) / duration, 0.0, 1.0);
-      last_sent_position = lerp(step.start_position, step.end_position, alpha);
-      return last_sent_position;
+  while (current_step_index + 1 < steps.size()) {
+    const auto& step = steps[current_step_index];
+    if (time_seconds >= step.end_time &&
+        all_reached(last_sent_position, step.end_position, Joint::kMaxJointDelta)) {
+      current_step_index++;
+    } else {
+      break;
     }
   }
 
-  if (!final_position.empty() &&
-      !all_reached(last_sent_position, final_position, Joint::kMaxJointDelta)) {
-    last_sent_position = lerp(last_sent_position, final_position, 1.0);
+  const auto& step = steps[current_step_index];
+
+  if (time_seconds < step.start_time) {
     return last_sent_position;
   }
 
-  return std::nullopt;
+  const double duration = step.end_time - step.start_time;
+  const double alpha = duration <= 0.0
+    ? 1.0
+    : std::clamp((time_seconds - step.start_time) / duration, 0.0, 1.0);
+
+  const std::vector<double> ideal = lerp(step.start_position, step.end_position, alpha);
+
+  last_sent_position = step_toward(last_sent_position, ideal);
+
+  const bool on_last = (current_step_index + 1 == steps.size());
+  if (on_last && time_seconds >= step.end_time &&
+      all_reached(last_sent_position, final_position, Joint::kMaxJointDelta)) {
+    return std::nullopt;
+  }
+
+  return last_sent_position;
 }
 
 bool Interpolator::is_done(double time_seconds) const
@@ -96,7 +104,6 @@ bool Interpolator::all_reached(
   if (current.size() != target.size()) {
     return false;
   }
-
   for (std::size_t i = 0; i < current.size(); i++) {
     if (std::abs(current[i] - target[i]) > tolerance) {
       return false;
@@ -118,10 +125,20 @@ std::vector<double> Interpolator::lerp(
   std::vector<double> result(start.size());
   for (std::size_t i = 0; i < start.size(); i++) {
     result[i] = start[i] + alpha * (end[i] - start[i]);
-    result[i] = std::clamp(
-      result[i],
-      start[i] - Joint::kMaxJointDelta,
-      start[i] + Joint::kMaxJointDelta);
+  }
+  return result;
+}
+
+
+std::vector<double> Interpolator::step_toward(
+  const std::vector<double>& current,
+  const std::vector<double>& target)
+{
+  std::vector<double> result(current.size());
+  for (std::size_t i = 0; i < current.size(); i++) {
+    const double delta = target[i] - current[i];
+    result[i] = current[i] +
+      std::clamp(delta, -Joint::kMaxJointDelta, Joint::kMaxJointDelta);
   }
   return result;
 }

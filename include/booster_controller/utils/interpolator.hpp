@@ -32,7 +32,12 @@ private:
   std::vector<Step> steps;
   std::vector<double> final_position;
   std::vector<double> last_sent_position;
-  double total_duration = 0.0;
+  std::size_t current_step_index{0};
+
+  std::vector<double> step_toward(
+      const std::vector<double>& current,
+      const std::vector<double>& target);
+    double total_duration = 0.0;
 
   static std::vector<double> lerp(
     const std::vector<double>& start,

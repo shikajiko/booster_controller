@@ -48,14 +48,10 @@ bool ModeTransitionController::submit_upper_body_control(
     return false;
   }
 
-  auto target_positions = positions_from_state(current_states);
-  for (const auto joint : Joint::kArmJoints) {
-    const auto index = Joint::joint_to_index(joint);
-    target_positions[index] = Joint::kStandPose[index];
-  }
-
   delay_second = 3.0F;
-  return load_target_positions(target_positions, current_states, delay_second);
+  return load_target_positions(std::vector<double>(Joint::kStandPose.begin(), Joint::kStandPose.end()),
+      current_states,
+      delay_second);
 }
 
 void ModeTransitionController::deactivate()
