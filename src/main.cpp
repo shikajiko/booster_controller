@@ -1,4 +1,4 @@
-#include "booster_controller/node/controller_manager_node.hpp"
+#include "booster_controller/controller_manager/controller_manager_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char * argv[])

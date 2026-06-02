@@ -15,15 +15,17 @@ find_package(booster_joint_interface REQUIRED)
 find_package(action_interface REQUIRED)
 
 add_library(${PROJECT_NAME}_lib
-  src/controller_manager/joint_manager.cpp
-  src/node/controller_manager_node.cpp
-  src/mode_transition_controller.cpp
-  src/set_joint_controller.cpp
-  src/torque_controller.cpp
-  src/utils/command_constructor.cpp
-  src/interpolator.cpp
-  src/trajectory_controller.cpp
-)
+  src/controller/mode_transition_controller.cpp
+  src/controller/set_joint_controller.cpp 
+  src/controller/torque_controller.cpp
+  src/controller/trajectory_controller.cpp
+  src/controller_manager/controller_manager.cpp 
+  src/controller_manager/controller_manager_node.cpp
+  src/joint_state_manager/joint_state_manager.cpp 
+  src/utils/command_constructor.cpp 
+  src/utils/interpolator.cpp 
+ )
+ 
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

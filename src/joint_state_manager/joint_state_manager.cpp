@@ -1,4 +1,4 @@
-#include "booster_controller/joint_manager/joint_manager.hpp"
+#include "booster_controller/joint_state_manager/joint_state_manager.hpp"
 
 namespace booster_controller
 {
