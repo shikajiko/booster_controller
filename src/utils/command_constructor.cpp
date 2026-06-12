@@ -57,7 +57,7 @@ booster_interface::msg::LowCmd construct_set_torque_command(
 
     cmd.motor_cmd.at(index).q       = target.position;
     cmd.motor_cmd.at(index).dq      = Joint::kDefaultJointDq;
-    cmd.motor_cmd.at(index).kp      = (enable_torque? Joint::kDefaultJointKps[index] : Joint::kDefaultJointKps[index]/4);
+    cmd.motor_cmd.at(index).kp      = (enable_torque? Joint::kDefaultJointKps[index] : 0.);
     cmd.motor_cmd.at(index).kd      = (enable_torque? Joint::kDefaultJointKds[index] : 0.);
     cmd.motor_cmd.at(index).tau     = Joint::kDefaultJointTau;
     cmd.motor_cmd.at(index).weight  = target.weight;
