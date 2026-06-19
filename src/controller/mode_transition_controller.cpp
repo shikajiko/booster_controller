@@ -19,16 +19,16 @@ bool ModeTransitionController::submit_mode_switch(
 
   switch (target_mode) {
   case TransitionCommand::MODE_STAND:
-    delay_second = 3.0F;
+    delay_second = 2.0F;
     return load_target_positions(
       std::vector<double>(Joint::kStandPose.begin(), Joint::kStandPose.end()),
       current_states,
       delay_second);
   case TransitionCommand::MODE_WALK:
-    delay_second = 0.1F;
+    delay_second = 0.0F;
     return true;
   case TransitionCommand::MODE_CUSTOM:
-    delay_second = 3.0F;
+    delay_second = 1.0F;
     return load_target_positions(
       std::vector<double>(Joint::kStandPose.begin(), Joint::kStandPose.end()),
       current_states,
@@ -48,7 +48,7 @@ bool ModeTransitionController::submit_upper_body_control(
     return false;
   }
 
-  delay_second = 3.0F;
+  delay_second = 2.0F;
   return load_target_positions(std::vector<double>(Joint::kStandPose.begin(), Joint::kStandPose.end()),
       current_states,
       delay_second);
@@ -128,4 +128,5 @@ std::vector<JointCommandTarget> ModeTransitionController::targets_from_positions
   return targets;
 }
 
+// TO DO: refactor and move targets_from_position, positions_from_state, and load_target_position into separate class 
 }  // namespace booster_controller
