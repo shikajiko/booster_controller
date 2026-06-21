@@ -19,7 +19,7 @@ bool ModeTransitionController::submit_mode_switch(
 
   switch (target_mode) {
   case TransitionCommand::MODE_STAND:
-    delay_second = 2.0F;
+    delay_second = 0.0F;
     return load_target_positions(
       std::vector<double>(Joint::kStandPose.begin(), Joint::kStandPose.end()),
       current_states,
