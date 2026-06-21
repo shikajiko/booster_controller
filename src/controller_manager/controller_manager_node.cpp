@@ -143,18 +143,6 @@ rclcpp_action::CancelResponse ControllerManagerNode::handle_trajectory_cancel(
 void ControllerManagerNode::handle_trajectory_accepted(
   std::shared_ptr<TrajectoryGoalHandle> goal_handle)
 {
-  const auto & traj = goal_handle->get_goal()->trajectory;
-  RCLCPP_INFO(node->get_logger(), "=== Trajectory accepted ===");
-  RCLCPP_INFO(node->get_logger(), "joint_names count: %zu", traj.joint_names.size());
-  for (size_t i = 0; i < traj.points.size(); i++) {
-    const auto & pt = traj.points[i];
-    RCLCPP_INFO(node->get_logger(), "point[%zu] delay=%.3f duration=%.3f",
-      i, pt.delay_before_seconds, pt.duration_seconds);
-    for (size_t j = 0; j < pt.positions.size(); j++) {
-      RCLCPP_INFO(node->get_logger(), "  %s = %.4f rad",
-        traj.joint_names[j].c_str(), pt.positions[j]);
-    }
-  }
   controller_manager.submit_trajectory(goal_handle);
 }
 
