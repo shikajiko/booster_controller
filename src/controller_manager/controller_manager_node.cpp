@@ -15,6 +15,9 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
       handle_joint_state(msg);
     });
 
+  current_joints_publisher = 
+    node->create_publisher<booster_joint_interface::msg::SetJoints>("joint/current_joints", 10);
+
   joint_command_publisher =
     node->create_publisher<booster_interface::msg::LowCmd>("/joint_ctrl", 10);
 
@@ -66,6 +69,8 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
 
 void ControllerManagerNode::tick()
 {
+  current_joints_publisher->publish(joint_state_manager.get_joint_degrees());
+
   auto command = controller_manager.update(
     Joint::kControlDt,
     joint_state_manager.get_joint_states());

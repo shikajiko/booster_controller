@@ -36,6 +36,7 @@ private:
 
   rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr joint_state_subscriber;
   rclcpp::Publisher<booster_interface::msg::LowCmd>::SharedPtr joint_command_publisher;
+  rclcpp::Publisher<booster_joint_interface::msg::SetJoints>::SharedPtr current_joints_publisher;
   rclcpp::Subscription<booster_joint_interface::msg::SetJoints>::SharedPtr set_joints_subscriber;
   rclcpp::Subscription<booster_joint_interface::msg::SetTorques>::SharedPtr set_torques_subscriber;
   rclcpp::Service<PrepareTransition>::SharedPtr prepare_transition_service;
