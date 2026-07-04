@@ -11,7 +11,9 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
   joint_state_subscriber = node->create_subscription<booster_interface::msg::LowState>(
     "/low_state",
     10,
-    std::bind(&ControllerManagerNode::handle_joint_state, this, std::placeholders::_1));
+    [this](booster_interface::msg::LowState::SharedPtr msg) {
+      handle_joint_state(msg);
+    });
 
   joint_command_publisher =
     node->create_publisher<booster_interface::msg::LowCmd>("/joint_ctrl", 10);
@@ -20,42 +22,44 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
     node->create_subscription<booster_joint_interface::msg::SetJoints>(
       "joint/set_joints",
       10,
-      std::bind(&ControllerManagerNode::handle_set_joints, this, std::placeholders::_1));
+      [this](booster_joint_interface::msg::SetJoints::SharedPtr msg) {
+        handle_set_joints(msg);
+      });
 
   set_torques_subscriber =
     node->create_subscription<booster_joint_interface::msg::SetTorques>(
       "joint/set_torques",
       10,
-      std::bind(&ControllerManagerNode::handle_set_torques, this, std::placeholders::_1));
+      [this](booster_joint_interface::msg::SetTorques::SharedPtr msg) {
+        handle_set_torques(msg);
+      });
 
   prepare_transition_service = node->create_service<PrepareTransition>(
     "prep_transition_service",
-    std::bind(
-      &ControllerManagerNode::handle_prepare_transition,
-      this,
-      std::placeholders::_1,
-      std::placeholders::_2));
+    [this](
+      const std::shared_ptr<PrepareTransition::Request> request,
+      std::shared_ptr<PrepareTransition::Response> response) {
+      handle_prepare_transition(request, response);
+    });
 
   trajectory_action_server = rclcpp_action::create_server<TrajectoryAction>(
     node,
     "controller/run_trajectory",
-    std::bind(
-      &ControllerManagerNode::handle_trajectory_goal,
-      this,
-      std::placeholders::_1,
-      std::placeholders::_2),
-    std::bind(
-      &ControllerManagerNode::handle_trajectory_cancel,
-      this,
-      std::placeholders::_1),
-    std::bind(
-      &ControllerManagerNode::handle_trajectory_accepted,
-      this,
-      std::placeholders::_1));
+    [this](
+      const rclcpp_action::GoalUUID & uuid,
+      std::shared_ptr<const TrajectoryAction::Goal> goal) {
+      return handle_trajectory_goal(uuid, goal);
+    },
+    [this](std::shared_ptr<TrajectoryGoalHandle> goal_handle) {
+      return handle_trajectory_cancel(goal_handle);
+    },
+    [this](std::shared_ptr<TrajectoryGoalHandle> goal_handle) {
+      handle_trajectory_accepted(goal_handle);
+    });
 
   timer = node->create_wall_timer(
     std::chrono::milliseconds(8),
-    std::bind(&ControllerManagerNode::tick, this));
+    [this]() { tick(); });
 
   RCLCPP_INFO(node->get_logger(), "Controller manager node ready");
 }
