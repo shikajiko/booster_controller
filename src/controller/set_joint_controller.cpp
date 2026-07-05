@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 
-#include "action_interface/msg/joint_trajectory.hpp"
+#include "booster_action_interface/msg/joint_trajectory.hpp"
 #include "booster_controller/utils/command_constructor.hpp"
 
 namespace booster_controller
@@ -29,8 +29,8 @@ bool SetJointController::submit(
       static_cast<double>(Joint::kMaxJointLimit[index]));
   }
 
-  action_interface::msg::JointTrajectory trajectory;
-  action_interface::msg::JointTrajectoryPoint point;
+  booster_action_interface::msg::JointTrajectory trajectory;
+  booster_action_interface::msg::JointTrajectoryPoint point;
   point.positions = target_positions;
   point.delay_before_seconds = 0.0;
   point.duration_seconds = 1.0;

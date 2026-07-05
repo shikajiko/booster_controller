@@ -122,8 +122,8 @@ bool TrajectoryController::cancel(std::shared_ptr<GoalHandle> goal_handle)
 
 void TrajectoryController::load_stand_trajectory()
 {
-  action_interface::msg::JointTrajectory trajectory;
-  action_interface::msg::JointTrajectoryPoint point;
+  booster_action_interface::msg::JointTrajectory trajectory;
+  booster_action_interface::msg::JointTrajectoryPoint point;
   point.positions.assign(Joint::kStandPose.begin(), Joint::kStandPose.end());
   point.delay_before_seconds = 0.0;
   point.duration_seconds = 2.0;

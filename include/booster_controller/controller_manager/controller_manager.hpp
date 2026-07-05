@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-#include "action_interface/action/action_trajectory.hpp"
+#include "booster_action_interface/action/action_trajectory.hpp"
 #include "booster_controller/controller/mode_transition_controller.hpp"
 #include "booster_controller/controller/set_joint_controller.hpp"
 #include "booster_controller/controller/torque_controller.hpp"
@@ -24,7 +24,7 @@ namespace booster_controller
 class ControllerManager
 {
 public:
-  using TrajectoryAction = action_interface::action::ActionTrajectory;
+  using TrajectoryAction = booster_action_interface::action::ActionTrajectory;
   using TrajectoryGoalHandle =
     rclcpp_action::ServerGoalHandle<TrajectoryAction>;
   using TransitionCommand =

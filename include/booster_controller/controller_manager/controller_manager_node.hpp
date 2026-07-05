@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "action_interface/action/action_trajectory.hpp"
+#include "booster_action_interface/action/action_trajectory.hpp"
 #include "booster_controller/controller_manager/controller_manager.hpp"
 #include "booster_controller/joint_state_manager/joint_state_manager.hpp"
 #include "booster_controller/utils/joint_command.hpp"
@@ -23,7 +23,7 @@ class ControllerManagerNode
 {
 public:
   using PrepareTransition = booster_joint_interface::srv::PrepareTransition;
-  using TrajectoryAction = action_interface::action::ActionTrajectory;
+  using TrajectoryAction = booster_action_interface::action::ActionTrajectory;
   using TrajectoryGoalHandle = rclcpp_action::ServerGoalHandle<TrajectoryAction>;
 
   explicit ControllerManagerNode(rclcpp::Node::SharedPtr node);

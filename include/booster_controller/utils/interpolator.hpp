@@ -3,7 +3,7 @@
 #include <optional>
 #include <vector>
 
-#include "action_interface/msg/joint_trajectory.hpp"
+#include "booster_action_interface/msg/joint_trajectory.hpp"
 #include "booster_controller/utils/joint_command.hpp"
 
 namespace booster_controller
@@ -18,7 +18,7 @@ struct Step {
 
 class Interpolator {
 public:
-  void load(const action_interface::msg::JointTrajectory& trajectory);
+  void load(const booster_action_interface::msg::JointTrajectory& trajectory);
   std::optional<std::vector<double>> sample(double time_seconds);
   bool is_done(double time_seconds) const;
   const std::vector<double>& end_position() const;

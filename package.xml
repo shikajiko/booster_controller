@@ -11,7 +11,7 @@
   <depend>booster_model</depend>
   <depend>booster_interface</depend>
   <depend>booster_joint_interface</depend>
-  <depend>action_interface</depend>
+  <depend>booster_action_interface</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
 

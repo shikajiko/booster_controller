@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "action_interface/msg/joint_trajectory.hpp"
+#include "booster_action_interface/msg/joint_trajectory.hpp"
 #include "booster_controller/utils/command_constructor.hpp"
 
 namespace booster_controller
@@ -92,8 +92,8 @@ bool ModeTransitionController::load_target_positions(
   const std::vector<booster_interface::msg::MotorState>& current_states,
   double duration_seconds)
 {
-  action_interface::msg::JointTrajectory trajectory;
-  action_interface::msg::JointTrajectoryPoint point;
+  booster_action_interface::msg::JointTrajectory trajectory;
+  booster_action_interface::msg::JointTrajectoryPoint point;
   point.positions = target_positions;
   point.delay_before_seconds = 0.0;
   point.duration_seconds = duration_seconds;

@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "action_interface/action/action_trajectory.hpp"
+#include "booster_action_interface/action/action_trajectory.hpp"
 #include "booster_controller/interface/controller_interface.hpp"
 #include "booster_controller/utils/interpolator.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -13,7 +13,7 @@ namespace booster_controller
 
 class TrajectoryController : public IController {
 public:
-  using Action = action_interface::action::ActionTrajectory;
+  using Action = booster_action_interface::action::ActionTrajectory;
   using GoalHandle = rclcpp_action::ServerGoalHandle<Action>;
 
   void activate() override;

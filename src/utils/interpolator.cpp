@@ -7,7 +7,7 @@
 namespace booster_controller
 {
 
-void Interpolator::load(const action_interface::msg::JointTrajectory& trajectory)
+void Interpolator::load(const booster_action_interface::msg::JointTrajectory& trajectory)
 {
   steps.clear();
   final_position.clear();

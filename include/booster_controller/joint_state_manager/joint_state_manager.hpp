@@ -23,7 +23,7 @@ public:
 
 private:
   std::vector<MotorState> current_joint_states;
-  std::vector<CurrentJoints> current_joint_degrees;
+  CurrentJoints current_joint_degrees;
   bool joint_state_received = false;
 
 };
