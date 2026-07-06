@@ -1,4 +1,5 @@
 #include "booster_controller/utils/interpolator.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -13,24 +14,36 @@ void Interpolator::load(const booster_action_interface::msg::JointTrajectory& tr
   final_position.clear();
   last_sent_position.clear();
   total_duration = 0.0;
-  current_step_index = 0;  
+  current_step_index = 0;
+  joint_count = 0;
+
   if (trajectory.points.empty()) {
     throw std::invalid_argument("Trajectory has no points");
   }
 
+  const auto first_size = trajectory.points.front().positions.size();
+  if (first_size != Joint::kJointCnt && first_size != Joint::kTotalJointCnt) {
+    throw std::invalid_argument("Number of joints does not match a known joint count");
+  }
+  joint_count = first_size;
+
   double cursor = 0.0;
   for (std::size_t i = 0; i < trajectory.points.size(); i++) {
     const auto& point = trajectory.points[i];
-    if (point.positions.size() != Joint::kJointCnt) {
-      throw std::invalid_argument("Number of joints does not match joint count");
+
+    if (point.positions.size() != joint_count) {
+      throw std::invalid_argument("All trajectory points must have the same joint count");
     }
+
     std::vector<double> start_position =
-      (i == 0) ? std::vector<double>(Joint::kJointCnt, 0.0)
+      (i == 0) ? std::vector<double>(joint_count, 0.0)
                : trajectory.points[i - 1].positions;
+
     cursor += point.delay_before_seconds;
     const double start_time = cursor;
     cursor += point.duration_seconds;
     const double end_time = cursor;
+
     steps.push_back({start_time, end_time, start_position, point.positions});
   }
 
@@ -41,9 +54,10 @@ void Interpolator::load(const booster_action_interface::msg::JointTrajectory& tr
 
 void Interpolator::set_start_positions(const std::vector<double>& current_joint_position)
 {
-  if (current_joint_position.size() != Joint::kJointCnt) {
+  if (current_joint_position.size() != joint_count) {
     return;
   }
+
   if (!steps.empty()) {
     steps.front().start_position = current_joint_position;
     last_sent_position = current_joint_position;
@@ -67,7 +81,6 @@ std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
   }
 
   const auto& step = steps[current_step_index];
-
   if (time_seconds < step.start_time) {
     return last_sent_position;
   }
@@ -78,7 +91,6 @@ std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
     : std::clamp((time_seconds - step.start_time) / duration, 0.0, 1.0);
 
   const std::vector<double> ideal = lerp(step.start_position, step.end_position, alpha);
-
   last_sent_position = step_toward(last_sent_position, ideal);
 
   const bool on_last = (current_step_index + 1 == steps.size());
@@ -128,7 +140,6 @@ std::vector<double> Interpolator::lerp(
   }
   return result;
 }
-
 
 std::vector<double> Interpolator::step_toward(
   const std::vector<double>& current,

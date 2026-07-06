@@ -21,6 +21,12 @@
 namespace booster_controller
 {
 
+struct ControllerOutput
+{
+  std::optional<booster_interface::msg::LowCmd> low_cmd;
+  std::optional<booster_joint_interface::msg::SetJoints> gripper_cmd;
+};
+
 class ControllerManager
 {
 public:
@@ -43,7 +49,7 @@ public:
     rclcpp::Node::SharedPtr node,
     JointStateManager& joint_state_manager);
 
-  std::optional<booster_interface::msg::LowCmd> update(
+  ControllerOutput update(
     double dt,
     const std::vector<booster_interface::msg::MotorState>& states);
 

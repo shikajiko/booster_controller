@@ -3,20 +3,23 @@
 namespace booster_controller
 {
 
-ControllerManager::ControllerManager( rclcpp::Node::SharedPtr node, JointStateManager& joint_state_manager) : 
+ControllerManager::ControllerManager(rclcpp::Node::SharedPtr node, JointStateManager& joint_state_manager) :
   joint_state_manager(joint_state_manager), logger(node->get_logger())
 {
   trajectory_controller.init(node);
+  trajectory_controller.set_joint_state_manager(joint_state_manager);
   mode_transition_controller.init(node);
   set_joint_controller.init(node);
   torque_controller.init(node);
 }
 
-std::optional<booster_interface::msg::LowCmd> ControllerManager::update(
+ControllerOutput ControllerManager::update(
   double dt,
   const std::vector<booster_interface::msg::MotorState>& states)
 {
-  if (!joint_state_manager.has_joint_state()) return std::nullopt;
+  ControllerOutput output;
+
+  if (!joint_state_manager.has_joint_state()) return output;
   const auto next_controller = select_active_controller();
 
   if (next_controller == ActiveController::none) {
@@ -26,14 +29,13 @@ std::optional<booster_interface::msg::LowCmd> ControllerManager::update(
         controller_name(active_controller).data());
       active_controller = ActiveController::none;
     }
-    return std::nullopt;
+    return output;
   }
 
   if (next_controller != active_controller) {
     auto* previous = controller_for(active_controller);
     if (previous && previous->has_work()) {
       previous->deactivate();
-
       RCLCPP_INFO(logger,
         "%.*s controller deactivated by higher-priority %.*s controller",
         static_cast<int>(controller_name(active_controller).size()),
@@ -44,7 +46,6 @@ std::optional<booster_interface::msg::LowCmd> ControllerManager::update(
 
     active_controller = next_controller;
     auto* activated = controller_for(active_controller);
-
     if (activated) {
       activated->activate();
       RCLCPP_INFO(logger, "%.*s controller activated",
@@ -58,15 +59,18 @@ std::optional<booster_interface::msg::LowCmd> ControllerManager::update(
   {
     if (!start_pending_trajectory_goal()) {
       active_controller = ActiveController::none;
-      return std::nullopt;
+      return output;
     }
   }
 
   auto* controller = controller_for(active_controller);
-  if (!controller) return std::nullopt;
+  if (!controller) return output;
 
   booster_interface::msg::LowCmd cmd;
   controller->update(dt, states, cmd);
+
+  output.low_cmd = cmd;
+  output.gripper_cmd = controller->gripper_command();
 
   if (!controller->has_work()) {
     controller->deactivate();
@@ -76,7 +80,7 @@ std::optional<booster_interface::msg::LowCmd> ControllerManager::update(
     active_controller = ActiveController::none;
   }
 
-  return cmd;
+  return output;
 }
 
 

@@ -18,12 +18,15 @@ public:
   void update_joint_state(const std::vector<MotorState>& state);
   void update_gripper_state(const CurrentJoints& msg);
   bool get_joint_state(Joint::JointIndex joint, MotorState& state) const;
+
+  const std::array<float, Joint::kGripperCnt>& get_gripper_positions() const;
   const std::vector<MotorState>& get_joint_states() const;
   const CurrentJoints& get_joint_degrees() const;
   bool has_joint_state() const;
 
 private:
   std::vector<MotorState> current_joint_states;
+  std::array<float, Joint::kGripperCnt> current_gripper_positions{};
   CurrentJoints current_joint_degrees;
   bool joint_state_received = false;
 };

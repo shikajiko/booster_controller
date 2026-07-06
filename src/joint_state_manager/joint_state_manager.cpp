@@ -9,34 +9,33 @@ void JointStateManager::update_joint_state(const std::vector<MotorState>& state)
   current_joint_states = state;
   joint_state_received = current_joint_states.size() >= Joint::kJointCnt;
 
-  if (current_joint_degrees.joints.size() < 24) {
-      current_joint_degrees.joints.resize(24);
-      for (size_t i = 0; i < 24; ++i) {
-          current_joint_degrees.joints[i].id = static_cast<uint8_t>(i);
-      }
+  if (current_joint_degrees.joints.size() < Joint::kTotalJointCnt) {
+    current_joint_degrees.joints.resize(Joint::kTotalJointCnt);
+    for (size_t i = 0; i < Joint::kTotalJointCnt; ++i) {
+      current_joint_degrees.joints[i].id = static_cast<uint8_t>(i);
+    }
   }
 
   constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
-
   for (size_t i = 0; i < current_joint_states.size(); ++i) {
-    current_joint_degrees.joints[i].position =
-        current_joint_states[i].q * kRadToDeg;
+    current_joint_degrees.joints[i].position = current_joint_states[i].q * kRadToDeg;
   }
 }
 
 void JointStateManager::update_gripper_state(const CurrentJoints& msg)
 {
-  if (current_joint_degrees.joints.size() < 24) {
-      current_joint_degrees.joints.resize(24);
-      for (size_t i = 0; i < 24; ++i) {
-          current_joint_degrees.joints[i].id = static_cast<uint8_t>(i);
-      }
+  if (current_joint_degrees.joints.size() < Joint::kTotalJointCnt) {
+    current_joint_degrees.joints.resize(Joint::kTotalJointCnt);
+    for (size_t i = 0; i < Joint::kTotalJointCnt; ++i) {
+      current_joint_degrees.joints[i].id = static_cast<uint8_t>(i);
+    }
   }
-  constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
 
-  for (size_t i = 22; i < 24; ++i) {
-    current_joint_degrees.joints[i].position =
-        msg.joints[i].position * kRadToDeg;
+  constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
+  for (size_t i = Joint::kJointCnt; i < Joint::kTotalJointCnt; ++i) {
+    if (i >= msg.joints.size()) continue;
+    current_gripper_positions[i - Joint::kJointCnt] = msg.joints[i].position;
+    current_joint_degrees.joints[i].position = msg.joints[i].position * kRadToDeg;
   }
 }
 
@@ -46,7 +45,6 @@ bool JointStateManager::get_joint_state(Joint::JointIndex joint, MotorState& sta
   if (!has_joint_state() || index >= current_joint_states.size()) {
     return false;
   }
-
   state = current_joint_states[index];
   return true;
 }
@@ -59,6 +57,11 @@ const std::vector<MotorState>& JointStateManager::get_joint_states() const
 const CurrentJoints& JointStateManager::get_joint_degrees() const
 {
   return current_joint_degrees;
+}
+
+const std::array<float, Joint::kGripperCnt>& JointStateManager::get_gripper_positions() const
+{
+  return current_gripper_positions;
 }
 
 bool JointStateManager::has_joint_state() const

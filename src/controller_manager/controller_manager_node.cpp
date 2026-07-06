@@ -12,18 +12,31 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
     "/low_state",
     10,
     [this](booster_interface::msg::LowState::SharedPtr msg) {
-      update_joint_state(msg);
+      handle_joint_state(msg);
+    });
+
+  gripper_state_subscriber = node->create_subscription<booster_joint_interface::msg::SetJoints>(
+    "/joint/gripper_state",
+    10,
+    [this](booster_joint_interface::msg::SetJoints::SharedPtr msg) {
+      handle_gripper_state(msg);
     });
 
   current_joints_publisher = 
-    node->create_publisher<booster_joint_interface::msg::SetJoints>("joint/current_joints", 10);
+    node->create_publisher<booster_joint_interface::msg::SetJoints>("/joint/current_joints", 10);
 
   joint_command_publisher =
     node->create_publisher<booster_interface::msg::LowCmd>("/joint_ctrl", 10);
 
+  gripper_torque_publisher = 
+    node->create_publisher<booster_joint_interface::msg::SetTorques>("/joint/set_gripper_torques", 10);
+
+  set_gripper_publisher = 
+    node->create_publisher<booster_joint_interface::msg::SetJoints>("/joint/set_grippers", 10);
+
   set_joints_subscriber =
     node->create_subscription<booster_joint_interface::msg::SetJoints>(
-      "joint/set_joints",
+      "/joint/set_joints",
       10,
       [this](booster_joint_interface::msg::SetJoints::SharedPtr msg) {
         handle_set_joints(msg);
@@ -31,7 +44,7 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
 
   set_torques_subscriber =
     node->create_subscription<booster_joint_interface::msg::SetTorques>(
-      "joint/set_torques",
+      "/joint/set_torques",
       10,
       [this](booster_joint_interface::msg::SetTorques::SharedPtr msg) {
         handle_set_torques(msg);
@@ -71,12 +84,16 @@ void ControllerManagerNode::tick()
 {
   current_joints_publisher->publish(joint_state_manager.get_joint_degrees());
 
-  auto command = controller_manager.update(
+  auto output = controller_manager.update(
     Joint::kControlDt,
     joint_state_manager.get_joint_states());
 
-  if (command) {
-    joint_command_publisher->publish(*command);
+  if (output.low_cmd) {
+    joint_command_publisher->publish(*output.low_cmd);
+  }
+
+  if (output.gripper_cmd) {
+    set_gripper_publisher->publish(*output.gripper_cmd);
   }
 }
 
@@ -84,6 +101,12 @@ void ControllerManagerNode::handle_joint_state(
   booster_interface::msg::LowState::SharedPtr msg)
 {
   joint_state_manager.update_joint_state(msg->motor_state_parallel);
+}
+
+void ControllerManagerNode::handle_gripper_state(
+  booster_joint_interface::msg::SetJoints::SharedPtr msg)
+{
+  joint_state_manager.update_gripper_state(*msg);
 }
 
 void ControllerManagerNode::handle_set_joints(
@@ -97,10 +120,26 @@ void ControllerManagerNode::handle_set_joints(
 void ControllerManagerNode::handle_set_torques(
   booster_joint_interface::msg::SetTorques::SharedPtr msg)
 {
+  std::vector<uint8_t> gripper_ids;
+
+  for (int i = 0; i < msg->ids.size(); i++) {
+    if (msg->ids[i] >= Joint::kJointCnt) 
+    {
+      gripper_ids.push_back(msg->ids[i]);
+    }
+  }
+
   auto joints = id_to_joint_idx(msg->ids);
 
   if (!controller_manager.submit_torques(joints, msg->torque_enable)) {
     RCLCPP_WARN(node->get_logger(), "set_torques rejected");
+  }
+
+  booster_joint_interface::msg::SetTorques gripper_msg;
+  for (const auto& id : gripper_ids) {
+    gripper_msg.ids.push_back(id);
+    gripper_msg.torque_enable = msg->torque_enable;
+    gripper_torque_publisher->publish(gripper_msg);
   }
 }
 
@@ -132,7 +171,17 @@ rclcpp_action::GoalResponse ControllerManagerNode::handle_trajectory_goal(
     RCLCPP_WARN(node->get_logger(), "Trajectory goal rejected: empty");
     return rclcpp_action::GoalResponse::REJECT;
   }
-  
+
+  for (const auto& point : goal->trajectory.points) {
+    const auto size = point.positions.size();
+    if (size != Joint::kJointCnt && size != Joint::kTotalJointCnt) {
+      RCLCPP_WARN(node->get_logger(),
+        "Trajectory goal rejected: point has %zu positions, expected %zu or %zu",
+        size, Joint::kJointCnt, Joint::kTotalJointCnt);
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+  }
+
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
