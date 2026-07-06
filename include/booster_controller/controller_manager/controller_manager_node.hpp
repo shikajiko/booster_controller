@@ -39,13 +39,16 @@ private:
   rclcpp::Publisher<booster_joint_interface::msg::SetJoints>::SharedPtr current_joints_publisher;
   rclcpp::Subscription<booster_joint_interface::msg::SetJoints>::SharedPtr set_joints_subscriber;
   rclcpp::Subscription<booster_joint_interface::msg::SetTorques>::SharedPtr set_torques_subscriber;
+  rclcpp::Subscription<booster_joint_interface::msg::SetJoints>::SharedPtr gripper_state_subscriber;
   rclcpp::Service<PrepareTransition>::SharedPtr prepare_transition_service;
   rclcpp_action::Server<TrajectoryAction>::SharedPtr trajectory_action_server;
   rclcpp::TimerBase::SharedPtr timer;
 
+  void handle_gripper_state(booster_joint_interface::msg::SetJoints::SharedPtr msg);
   void handle_joint_state(booster_interface::msg::LowState::SharedPtr msg);
   void handle_set_joints(booster_joint_interface::msg::SetJoints::SharedPtr msg);
   void handle_set_torques(booster_joint_interface::msg::SetTorques::SharedPtr msg);
+
   void handle_prepare_transition(
     const std::shared_ptr<PrepareTransition::Request> request,
     std::shared_ptr<PrepareTransition::Response> response);

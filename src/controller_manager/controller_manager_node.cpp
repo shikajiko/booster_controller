@@ -12,7 +12,7 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
     "/low_state",
     10,
     [this](booster_interface::msg::LowState::SharedPtr msg) {
-      handle_joint_state(msg);
+      update_joint_state(msg);
     });
 
   current_joints_publisher = 
