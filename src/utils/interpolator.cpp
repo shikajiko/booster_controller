@@ -7,14 +7,24 @@
 
 namespace booster_controller
 {
+namespace
+{
+// Looser tolerance used only to decide whether the *entire* trajectory has
+// finished. Distinct from Joint::kMaxJointDelta, which gates advancing
+// between intermediate steps.
+constexpr double kFinalPositionTolerance = 0.1;
+}  // namespace
 
 void Interpolator::load(const booster_action_interface::msg::JointTrajectory& trajectory)
 {
   steps.clear();
   final_position.clear();
   last_sent_position.clear();
+  delta_steps.clear();
   total_duration = 0.0;
   current_step_index = 0;
+  last_step_index = std::numeric_limits<std::size_t>::max();
+  tick_count_for_current_step = 0;
   joint_count = 0;
 
   if (trajectory.points.empty()) {
@@ -85,17 +95,22 @@ std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
     return last_sent_position;
   }
 
-  const double duration = step.end_time - step.start_time;
-  const double alpha = duration <= 0.0
-    ? 1.0
-    : std::clamp((time_seconds - step.start_time) / duration, 0.0, 1.0);
+  const bool is_starting_new_step = (current_step_index != last_step_index);
+  if (is_starting_new_step) {
+    const double duration = step.end_time - step.start_time;
+    tick_count_for_current_step =
+      std::max(1, static_cast<int>(duration / Joint::kControlDt));
 
-  const std::vector<double> ideal = lerp(step.start_position, step.end_position, alpha);
-  last_sent_position = step_toward(last_sent_position, ideal);
+    get_delta_steps(step.start_position, step.end_position, tick_count_for_current_step);
+    
+    last_step_index = current_step_index;
+  }
+
+  last_sent_position = step_toward(last_sent_position, step.end_position);
 
   const bool on_last = (current_step_index + 1 == steps.size());
   if (on_last && time_seconds >= step.end_time &&
-      all_reached(last_sent_position, final_position, Joint::kMaxJointDelta)) {
+      all_reached(last_sent_position, final_position, kFinalPositionTolerance)) {
     return std::nullopt;
   }
 
@@ -105,7 +120,7 @@ std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
 bool Interpolator::is_done(double time_seconds) const
 {
   return time_seconds >= total_duration &&
-    all_reached(last_sent_position, final_position, Joint::kMaxJointDelta);
+    all_reached(last_sent_position, final_position, kFinalPositionTolerance);
 }
 
 bool Interpolator::all_reached(
@@ -129,27 +144,31 @@ const std::vector<double>& Interpolator::end_position() const
   return final_position;
 }
 
-std::vector<double> Interpolator::lerp(
+void Interpolator::get_delta_steps(
   const std::vector<double>& start,
-  const std::vector<double>& end,
-  double alpha)
+  const std::vector<double>& target,
+  const int tick_count)
 {
-  std::vector<double> result(start.size());
+  delta_steps.assign(start.size(), 0.0);
   for (std::size_t i = 0; i < start.size(); i++) {
-    result[i] = start[i] + alpha * (end[i] - start[i]);
+    delta_steps[i] = (target[i] - start[i]) / tick_count;
   }
-  return result;
 }
 
 std::vector<double> Interpolator::step_toward(
   const std::vector<double>& current,
-  const std::vector<double>& target)
+  const std::vector<double>& target) const
 {
   std::vector<double> result(current.size());
   for (std::size_t i = 0; i < current.size(); i++) {
-    const double delta = target[i] - current[i];
-    result[i] = current[i] +
-      std::clamp(delta, -Joint::kMaxJointDelta, Joint::kMaxJointDelta);
+    const double clamped_step =
+      std::clamp(delta_steps[i], -Joint::kMaxJointDelta, Joint::kMaxJointDelta);
+    double next = current[i] + clamped_step;
+
+    if ((target[i] - current[i]) * (target[i] - next) < 0.0) {
+      next = target[i];
+    }
+    result[i] = next;
   }
   return result;
 }
