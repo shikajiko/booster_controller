@@ -74,7 +74,7 @@ ControllerManagerNode::ControllerManagerNode(rclcpp::Node::SharedPtr node)
     });
 
   timer = node->create_wall_timer(
-    std::chrono::milliseconds(8),
+    std::chrono::milliseconds(static_cast<int>(Joint::kCommandFrequencyMs)),
     [this]() { tick(); });
 
   RCLCPP_INFO(node->get_logger(), "Controller manager node ready");
