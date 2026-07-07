@@ -1,5 +1,6 @@
 #include "booster_controller/joint_state_manager/joint_state_manager.hpp"
 #include <cmath>
+#include <iostream>
 
 namespace booster_controller
 {
@@ -24,18 +25,12 @@ void JointStateManager::update_joint_state(const std::vector<MotorState>& state)
 
 void JointStateManager::update_gripper_state(const CurrentJoints& msg)
 {
-  if (current_joint_degrees.joints.size() < Joint::kTotalJointCnt) {
-    current_joint_degrees.joints.resize(Joint::kTotalJointCnt);
-    for (size_t i = 0; i < Joint::kTotalJointCnt; ++i) {
-      current_joint_degrees.joints[i].id = static_cast<uint8_t>(i);
-    }
-  }
 
   constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
-  for (size_t i = Joint::kJointCnt; i < Joint::kTotalJointCnt; ++i) {
-    if (i >= msg.joints.size()) continue;
-    current_gripper_positions[i - Joint::kJointCnt] = msg.joints[i].position;
-    current_joint_degrees.joints[i].position = msg.joints[i].position * kRadToDeg;
+  for (size_t i = 22; i < Joint::kTotalJointCnt; ++i) {
+    current_gripper_positions[i - Joint::kJointCnt] = msg.joints[i - Joint::kJointCnt].position;
+    current_joint_degrees.joints[i].position = msg.joints[i - Joint::kJointCnt].position * kRadToDeg;
+    std::cout<<msg.joints[i - Joint::kJointCnt].position<<std::endl;
   }
 }
 
