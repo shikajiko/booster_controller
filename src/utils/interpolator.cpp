@@ -98,11 +98,10 @@ std::optional<std::vector<double>> Interpolator::sample(double time_seconds)
   const bool is_starting_new_step = (current_step_index != last_step_index);
   if (is_starting_new_step) {
     const double duration = step.end_time - step.start_time;
+    // Guard against zero/sub-tick durations, which would otherwise divide by zero.
     tick_count_for_current_step =
       std::max(1, static_cast<int>(duration / Joint::kControlDt));
-
     get_delta_steps(step.start_position, step.end_position, tick_count_for_current_step);
-    
     last_step_index = current_step_index;
   }
 
@@ -160,15 +159,14 @@ std::vector<double> Interpolator::step_toward(
   const std::vector<double>& target) const
 {
   std::vector<double> result(current.size());
+  const double max_delta = static_cast<double>(Joint::kMaxJointDelta);
   for (std::size_t i = 0; i < current.size(); i++) {
-    const double clamped_step =
-      std::clamp(delta_steps[i], -Joint::kMaxJointDelta, Joint::kMaxJointDelta);
-    double next = current[i] + clamped_step;
-
-    if ((target[i] - current[i]) * (target[i] - next) < 0.0) {
-      next = target[i];
+    const double remaining = target[i] - current[i];
+    double step = std::clamp(delta_steps[i], -max_delta, max_delta);
+    if (std::abs(step) > std::abs(remaining)) {
+      step = remaining;
     }
-    result[i] = next;
+    result[i] = current[i] + step;
   }
   return result;
 }

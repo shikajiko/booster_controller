@@ -6,7 +6,6 @@
 #include <booster_action_interface/msg/joint_trajectory.hpp>
 #include "booster_controller/utils/joint_command.hpp"
 #include "booster_model/joint.hpp"
-
 namespace booster_controller
 {
 class Interpolator
